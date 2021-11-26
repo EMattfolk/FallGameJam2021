@@ -1,0 +1,45 @@
+from /love use love
+use /gfx
+
+//Camera :: blob {
+//
+//}
+
+drawGraph :: fn graph: Graph do
+    graph.edges -> for_each' fn edge do
+        n1 := graph.nodes[edge[0]]
+        n2 := graph.nodes[edge[1]]
+
+        c := gfx.rgb' 0., 1., 0.
+        gfx.drawLine' c, n1.position, n2.position
+    end
+
+    graph.nodes -> for_each' fn node do
+        c := gfx.rgb' 1., 0., 0.
+        gfx.drawCircle' c, node.position, NODE_SIZE
+    end
+end
+
+Graph :: blob {
+    nodes: [Node],
+    edges: [(int, int)],
+}
+
+Node :: blob {
+    position: (float, float),
+    tile: Tile,
+}
+
+NODE_SIZE :: 50.
+
+Tile :: enum
+    Empty,
+    Factory int,
+end
+
+createGraph :: fn -> Graph do
+    Graph {
+        nodes: [Node { position: (100., 100.), tile: Tile.Empty, },Node { position: (200., 200.), tile: Tile.Empty, },],
+        edges: [(0, 1)],
+    }
+end
