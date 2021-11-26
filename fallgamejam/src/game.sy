@@ -34,15 +34,23 @@ init :: fn do
     love.keypressed = fn key, scancode, repeat do
         print(input.strToKeyDict[key])
 
-        case scene do
-            MainMenu do
-                print("starting game")
-                scene = States.Game
+        case input.strToKeyDict[key] do
+            Escape do
+                print' "Quitting game..."
+                love.event.quit' 0
             end
-            Game do
-                print("Key pressed in game")
+            else do
+                case scene do
+                    MainMenu do
+                        print("starting game")
+                        scene = States.Game
+                    end
+                    Game do
+                        print("Key pressed in game")
+                    end
+                    else do <!> end
+                end
             end
-            else do <!> end
         end
     end
 
