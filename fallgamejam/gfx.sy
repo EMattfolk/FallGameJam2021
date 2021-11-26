@@ -8,6 +8,11 @@ Color :: blob {
     alpha: float,
 }
 
+clearShader :: fn do
+    x : fn -> void : unsafe_force' love.graphics.setShader
+    x'
+end
+
 // NOTE(ed): Might be nice to convert HSL to RGB?
 rgb :: fn r, g, b -> Color
     Color { red: r, green: g, blue: b, alpha: 1. }

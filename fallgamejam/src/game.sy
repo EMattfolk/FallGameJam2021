@@ -30,7 +30,9 @@ init :: fn do
         end
     end
 
-    col := gfx.rgb' 1., 0., 1.
+    col := gfx.rgb' 1., 0., 0.
+
+    voronoiShader :: love.graphics.newShader("res/voronoi.glsl")
 
     draw :: fn do
         case scene do
@@ -43,6 +45,13 @@ init :: fn do
             end
             else do <!> end
         end
+
+        white := gfx.rgb' 1., 1., 1.
+
+        love.graphics.setShader' voronoiShader
+
+        gfx.drawRect' white, (0., 0.), (800., 600.)
+        gfx.clearShader'
     end
 
     scene = States.Game GameState {
@@ -72,6 +81,7 @@ init :: fn do
     love.update = update
     love.draw = draw
 end
+
 //use gfx
 //from gfx use (stableRandomColor as rcol)
 //use input

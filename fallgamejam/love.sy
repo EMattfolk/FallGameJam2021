@@ -59,18 +59,13 @@ LoveGraphics :: blob {
     newFont: fn str, int, str -> Font,
     newParticleSystem: fn *, int -> ParticleSystem,
     newQuad: fn int, int, int, int, ImageData -> Quad,
-    newShader: fn str, str -> Shader,
+    newShader: fn str -> Shader,
 
     setShader: fn Shader -> void,
 
     getWidth: fn -> int,
     getHeight: fn -> int,
 }
-
-clearShader :: fn do
-    x : fn -> void : unsafe_force' love.graphics.setShader
-    x'
-end
 
 LoveKeyboard :: blob {
     isDown: fn str -> bool,
