@@ -322,6 +322,12 @@ function atan2(x, y) return math.atan2(y, x) end
 function dbg(x) print(x); return x end
 function random_choice(l) return l[math.random(1, #l)] end
 
+function varargs(f)
+    return function(xs)
+        return f(unpack(xs))
+    end
+end
+
 function for_each(l, f)
     for _, v in pairs(l) do
         f(v)
