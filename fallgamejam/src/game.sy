@@ -4,6 +4,8 @@ use /input
 use /gfx
 use graph
 
+from /main use varargs
+
 States :: enum
     MainMenu *,
     Game GameState,
@@ -18,8 +20,11 @@ init :: fn do
     aFont :: gfx.aFont()
 
     scene := States.MainMenu
+    time := 0.
 
     update :: fn delta do
+        time = time + delta
+
         case scene do
             MainMenu do
             end
@@ -49,6 +54,25 @@ init :: fn do
         white := gfx.rgb' 1., 1., 1.
 
         love.graphics.setShader' voronoiShader
+
+        vertices :: [
+            (
+                100. + cos(time) * 50.,
+                100. + sin(time) * 30.,
+            ),
+            (
+                200. + cos(time) * 50.,
+                100. + sin(time) * 30.,
+            ),
+            (
+                300. + cos(time) * 50.,
+                100. + sin(time) * 30.,
+            ),
+            (
+                400. + cos(time) * 50.,
+                100. + sin(time) * 30.,
+            ),
+        ]
 
         gfx.drawRect' white, (0., 0.), (800., 600.)
         gfx.clearShader'
