@@ -1,6 +1,8 @@
 from love use love
 from src/game use init
 
+varargs: fn fn * -> * -> fn [*] -> *: external
+
 start :: fn do
     init()
 end
