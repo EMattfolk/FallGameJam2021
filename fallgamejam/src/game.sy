@@ -1,5 +1,5 @@
 from /love use love
-use /res
+use /res/
 
 init :: fn do
     love.keypressed = fn key, scancode, repeat do
