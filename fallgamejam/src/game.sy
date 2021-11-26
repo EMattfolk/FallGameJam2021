@@ -1,4 +1,4 @@
-from /love use love
+from /love use (love, Shader)
 use /res/
 use /input
 use /gfx
@@ -14,6 +14,40 @@ end
 GameState :: blob {
     graph: graph.Graph,
 }
+
+send_shader_graph_positions :: fn shader: Shader, points do
+    // !!!!!!!! DON'T DO THIS AT HOME !!!!!!!
+    do
+        v : [int] : [
+            unsafe_force(shader),
+            unsafe_force("vertex_positions"),
+        ]
+        points -> for_each' fn x do
+            v -> push' unsafe_force' (x[0], x[1])
+        end
+        varargs(shader.send)(v)
+    end
+
+    do
+        v : [int] : [
+            unsafe_force(shader),
+            unsafe_force("vertex_colors"),
+        ]
+        points -> for_each' fn x do
+            v -> push' unsafe_force' x[2]
+        end
+        varargs(shader.send)(v)
+    end
+
+    do
+        v :: [
+            unsafe_force(shader),
+            unsafe_force("num_vertex_positions"),
+            len(points),
+        ]
+        varargs(shader.send)(v)
+    end
+end
 
 init :: fn do
 
@@ -40,6 +74,36 @@ init :: fn do
     voronoiShader :: love.graphics.newShader("res/voronoi.glsl")
 
     draw :: fn do
+        white := gfx.rgb' 1., 1., 1.
+
+        vertices :: [
+            (
+                100. + cos(time) * 50.,
+                100. + sin(time) * 30.,
+                1,
+            ),
+            (
+                200. + cos(5.2 * time) * 50.,
+                200. + sin(time) * 30.,
+                0,
+            ),
+            (
+                300. + cos(1.4 * time) * 50.,
+                100. + sin(time) * 30.,
+                2,
+            ),
+            (
+                400. + cos(2. * time) * 50.,
+                300. + sin(2. * time) * 30.,
+                3,
+            ),
+        ]
+
+        love.graphics.setShader' voronoiShader
+        send_shader_graph_positions' voronoiShader, vertices
+        gfx.drawRect' white, (0., 0.), (800., 600.)
+        gfx.clearShader'
+
         case scene do
             MainMenu do
                 aFont.drawText' col, "Menu", (200., 200.)
@@ -50,32 +114,6 @@ init :: fn do
             end
             else do <!> end
         end
-
-        white := gfx.rgb' 1., 1., 1.
-
-        love.graphics.setShader' voronoiShader
-
-        vertices :: [
-            (
-                100. + cos(time) * 50.,
-                100. + sin(time) * 30.,
-            ),
-            (
-                200. + cos(time) * 50.,
-                100. + sin(time) * 30.,
-            ),
-            (
-                300. + cos(time) * 50.,
-                100. + sin(time) * 30.,
-            ),
-            (
-                400. + cos(time) * 50.,
-                100. + sin(time) * 30.,
-            ),
-        ]
-
-        gfx.drawRect' white, (0., 0.), (800., 600.)
-        gfx.clearShader'
     end
 
     scene = States.Game GameState {

@@ -25,7 +25,11 @@ ImageData :: blob {
 Quad :: blob { _003_unique_type: int, }
 Font :: blob { _004_unique_type: int, }
 
-Shader :: blob { _005_unique_type: int, }
+Shader :: blob {
+    _005_unique_type: int,
+    // Vararg
+    send: fn [*] -> void,
+}
 
 LoveGraphics :: blob {
     // We need to accept multiple overloads
