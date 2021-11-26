@@ -1,22 +1,57 @@
 from /love use love
 use /res/
+use /input
+use /gfx
+
+States :: enum
+    MainMenu *,
+    Game *,
+end
 
 init :: fn do
+
+    aFont :: gfx.aFont()
+
+    scene := States.MainMenu
+
+    update :: fn delta do
+    end
+
+    col := gfx.rgb' 1., 0., 1.
+
+    draw :: fn do
+        case scene do
+            MainMenu do
+                aFont.drawText' col, "Menu", (200., 200.)
+            end
+            Game do
+                aFont.drawText' col, "Game", (200., 200.)
+            end
+            else do <!> end
+        end
+    end
+
     love.keypressed = fn key, scancode, repeat do
+        print(input.strToKeyDict[key])
+
+        case scene do
+            MainMenu do
+                print("starting game")
+                scene = States.Game
+            end
+            Game do
+                print("Key pressed in game")
+            end
+            else do <!> end
+        end
     end
 
     love.keyreleased = fn key, scancode do
     end
-end
 
-update :: fn delta do
-    print("Update!")
+    love.update = update
+    love.draw = draw
 end
-
-draw :: fn do
-    print("Draw!")
-end
-
 //use gfx
 //from gfx use (stableRandomColor as rcol)
 //use input

@@ -1,8 +1,6 @@
 from love use love
-from src/game use (init, update, draw)
+from src/game use init
 
 start :: fn do
     init()
-    love.update = update
-    love.draw = draw
 end
