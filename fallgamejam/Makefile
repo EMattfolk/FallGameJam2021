@@ -1,7 +1,7 @@
 run: main.lua
 	love .
 
-main.lua: main.sy *.sy | sylt
+main.lua: main.sy res/*.sy src/*.sy | sylt
 	../target/debug/sylt -c $@ $<
 
 sylt:
