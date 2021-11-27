@@ -98,7 +98,7 @@ facingNeighbour :: fn node: int, direction: (float, float), graph -> int do
     origo := graph.nodes[node].position
     neighbours := neighboursOf' node, graph
     best := -1
-    bestScalar := 0.
+    bestScalar := -2.
     neighbours -> for_each' fn neighbour do
         nNeighbour := normalize(graph.nodes[neighbour].position - origo)
         cosPhi := dot' nDirection, nNeighbour

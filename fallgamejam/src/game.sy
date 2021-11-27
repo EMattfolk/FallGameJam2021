@@ -177,7 +177,21 @@ init :: fn do
             Escape do
                 print' "Quitting game..."
                 love.event.quit' 0
-            else do end
+            end
+            Space do
+                case scene do
+                    Game state do
+                        case state.inputState do
+                            MoveUnitDirection tup do
+                                unitI := tup[0]
+                                facing := graph.facingNeighbour' tup[0], tup[1], state.graph
+                                state.units[unitI].node = facing
+                            end
+                            else do end
+                        end
+                    end else do end
+                end
+            end else do end
         end
 
         case scene do
