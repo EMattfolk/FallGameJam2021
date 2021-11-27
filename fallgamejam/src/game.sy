@@ -200,7 +200,7 @@ init :: fn do
 
                 // Update animation timers
                 state.factions -> for_each' fn f do
-                    guys :: state.guys[guy.faction_to_int(f)]
+                    guys :: state.guys_to_move[guy.faction_to_int(f)]
                     guys -> for_each' fn g do
                         guy.updateGuy' g, delta
                     end
