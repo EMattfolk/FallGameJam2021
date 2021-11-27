@@ -1,5 +1,8 @@
 from /love use love
 use /gfx
+use guy
+
+from guy use Faction
 
 //Camera :: blob {
 //
@@ -15,6 +18,27 @@ tile_color :: fn tile ->
     ret gfx.rgb' 0., 0., 0.
 end
 
+drawNode :: fn node: Node do
+    case node.tile do
+        Base faction do
+            guy.crest_image(faction).drawCentered' node.position, 0.0, (1., 1.)
+        end
+        Factory faction do
+            c :: gfx.rgb' 0.5, 0.5, 0.5
+            gfx.drawCircle' c, node.position, NODE_SIZE
+        end
+        Empty do
+            c :: gfx.rgb' 0.5, 0.5, 0.5
+            gfx.drawCircle' c, node.position, NODE_SIZE
+        end
+        EmptyFactory do
+            c :: gfx.rgb' 0.2, 0.2, 0.2
+            gfx.drawCircle' c, node.position, NODE_SIZE
+        end
+        else do <!> end
+    end
+end
+
 drawGraph :: fn graph: Graph do
     graph.edges -> for_each' fn edge do
         n1 := graph.nodes[edge[0]]
@@ -24,10 +48,7 @@ drawGraph :: fn graph: Graph do
         gfx.drawLine' c, n1.position, n2.position
     end
 
-    graph.nodes -> for_each' fn node do
-        c :: tile_color(node.tile)
-        gfx.drawCircle' c, node.position, NODE_SIZE
-    end
+    graph.nodes -> for_each' drawNode
 end
 
 graphCenter :: fn graph: Graph ->
@@ -101,8 +122,10 @@ end
 NODE_SIZE :: 30.
 
 Tile :: enum
+    Base Faction,
+    Factory Faction,
     Empty,
-    Factory int,
+    EmptyFactory,
 end
 
 neighboursOf :: fn node: int, graph -> [int] do
@@ -148,13 +171,13 @@ createGraph :: fn -> Graph do
             new_node(Tile.Empty, (560., 200.)),
             new_node(Tile.Empty, (640., 200.)),
 
-            new_node(Tile.Factory 0, (160., 300.)),
+            new_node(Tile.Base Faction.Blueberry, (160., 300.)),
             new_node(Tile.Empty, (240., 300.)),
             new_node(Tile.Empty, (320., 300.)),
             new_node(Tile.Empty, (400., 300.)),
             new_node(Tile.Empty, (480., 300.)),
             new_node(Tile.Empty, (560., 300.)),
-            new_node(Tile.Factory 0, (640., 300.)),
+            new_node(Tile.Base Faction.Cloudberry, (640., 300.)),
 
             new_node(Tile.Empty, (160., 400.)),
             new_node(Tile.Empty, (240., 400.)),
