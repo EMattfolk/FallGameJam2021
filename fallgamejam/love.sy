@@ -159,6 +159,10 @@ Love :: blob {
     keyreleased: fn str, str -> void,
     resize: fn int, int -> void,
 
+    gamepadaxis: fn LoveJoystick, str, float -> void,
+    gamepadpressed: fn LoveJoystick, str -> void,
+    gamepadreleased: fn LoveJoystick, str -> void,
+
     audio: LoveAudio,
     graphics: LoveGraphics,
     keyboard: LoveKeyboard,
@@ -168,6 +172,11 @@ Love :: blob {
     timer: LoveTimer,
     window: LoveWindow,
     event: LoveEvent,
+}
+
+LoveJoystick :: blob {
+    _178_unique_type: int,
+    getID: fn * -> int, // * == Self
 }
 
 love: Love : external
