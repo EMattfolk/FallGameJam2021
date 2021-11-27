@@ -143,7 +143,7 @@ createGraph :: fn -> Graph do
             new_node(Tile.Empty, (400., 300.)),
             new_node(Tile.Empty, (480., 300.)),
             new_node(Tile.Empty, (560., 300.)),
-            new_node(Tile.Factory guy.Faction.Strawberry, (640., 300.)),
+            new_node(Tile.Factory guy.Faction.Cloudberry, (640., 300.)),
 
             new_node(Tile.Empty, (160., 400.)),
             new_node(Tile.Empty, (240., 400.)),

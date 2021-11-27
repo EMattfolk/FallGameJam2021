@@ -10,6 +10,18 @@ use guy
 
 from /main use varargs
 
+clone :: fn list ->
+    c :: []
+    list -> for_each' fn x ->
+        c -> push' x
+    end
+    ret c
+end
+
+guy_to_move :: fn state ->
+    ret state.guys_to_move[guy.faction_to_int(state.player_turn)] -> last'
+end
+
 newController :: fn -> Controller do
     Controller {
         joystick: (0., 0.),
@@ -32,13 +44,14 @@ States :: enum
 end
 
 InputState :: enum
-    MoveGuy int, // guy index
-    MoveGuyDirection (int, (float, float)), // guy index, direction [0, 2*pi)
+    MoveGuy,
+    MoveGuyDirection (float, float), // direction xy
 end
 
 GameState :: blob {
     graph: graph.Graph,
     guys: {int: [guy.Guy]},
+    guys_to_move: {int: [guy.Guy]},
     factions: [guy.Faction],
     player_turn: guy.Faction,
     moves_left: int,
@@ -89,21 +102,34 @@ init :: fn do
     scene := States.MainMenu menu.createMenu([])
     scene = States.MainMenu menu.createMenu([
         ("Start", fn do
-            scene = States.Game GameState {
+            blue_guys :: [
+                guy.new_guy(guy.Faction.Blueberry, 7),
+            ]
+            cloud_guys :: [
+                guy.new_guy(guy.Faction.Cloudberry, 13),
+            ]
+            state :: GameState {
                 graph: graph.createGraph(),
                 guys: {
-                    guy.faction_to_int(guy.Faction.Blueberry): [
-                        guy.new_guy(guy.Faction.Blueberry, 0),
-                    ],
-                    guy.faction_to_int(guy.Faction.Strawberry): [
-                        guy.new_guy(guy.Faction.Strawberry, 1),
-                    ],
+                    guy.faction_to_int(guy.Faction.Blueberry): blue_guys,
+                    guy.faction_to_int(guy.Faction.Cloudberry): cloud_guys,
                 },
-                factions: [guy.Faction.Blueberry, guy.Faction.Strawberry],
+                guys_to_move: {
+                    guy.faction_to_int(guy.Faction.Blueberry): blue_guys,
+                    guy.faction_to_int(guy.Faction.Cloudberry): cloud_guys,
+                },
+                factions: [guy.Faction.Blueberry, guy.Faction.Cloudberry],
                 player_turn: guy.Faction.Blueberry,
                 moves_left: 1,
-                inputState: InputState.MoveGuy 0,
+                inputState: InputState.MoveGuy,
             }
+            state.factions -> for_each' fn faction do
+                fi :: guy.faction_to_int' faction
+
+                state.guys_to_move[fi] = state.guys[fi] -> clone'
+            end
+
+            scene = States.Game state
         end),
         ("Exit", fn do
             love.event.quit' 0
@@ -157,21 +183,21 @@ init :: fn do
 
                 // Inputs
                 case state.inputState do
-                    MoveGuy guy do
+                    MoveGuy do
                         may_dir := inputDirection'
                         case may_dir do
                             Just dir do
-                                state.inputState = InputState.MoveGuyDirection (guy, dir)
+                                state.inputState = InputState.MoveGuyDirection dir
                             end
                             else do end
                         end
                     end
 
-                    MoveGuyDirection tup do
+                    MoveGuyDirection _ do
                         may_dir := inputDirection'
                         case may_dir do
                             Just dir do
-                                state.inputState = InputState.MoveGuyDirection (tup[0], dir)
+                                state.inputState = InputState.MoveGuyDirection dir
                             end
                             else do end
                         end
@@ -272,9 +298,9 @@ init :: fn do
                 end
 
                 case state.inputState do
-                    MoveGuyDirection tup do
-                        g :: state.guys[guy.faction_to_int(state.player_turn)][tup[0]]
-                        facing :: graph.facingNeighbour' g.node, tup[1], state.graph
+                    MoveGuyDirection dir do
+                        g :: state -> guy_to_move'
+                        facing :: graph.facingNeighbour' g.node, dir, state.graph
                         guy.drawGuyDirection' g, facing, state.graph
                     end
 
@@ -287,26 +313,53 @@ init :: fn do
         end
     end
 
+    faction_start_round :: fn state do
+        fi :: guy.faction_to_int' state.player_turn
+
+        to_move :: state.guys_to_move[fi]
+
+        guys :: state.guys[fi]
+
+        if len(to_move) == 0 do
+            i := 0
+            loop i < len(state.graph.nodes) do
+                case state.graph.nodes[i].tile do
+                    Factory faction do
+                        if faction == state.player_turn do
+                            guys -> push' guy.new_guy(faction, i)
+                        else do
+                            print' faction
+                        end
+                    end
+                    else do end
+                end
+                i = i + 1
+            end
+
+            state.guys_to_move[fi] = guys -> clone' // TODO shuffle
+        end
+    end
+
     next_turn :: fn state do
-        mod :: len' state.factions
-        i :: rem' guy.faction_to_int(state.player_turn) + 1, mod
-        faction :: state.factions[i]
+        faction_i :: guy.faction_to_int' state.player_turn
+        state.guys_to_move[faction_i] -> pop'
 
-        state.player_turn = faction
-        guys :: state.guys[guy.faction_to_int(faction)]
-        guy_index :: love.math.random(0, len(guys) - 1)
-        state.inputState = InputState.MoveGuy guy_index
+        num_factions :: len' state.factions
+        next_faction_i :: faction_i + 1
+        i :: rem' next_faction_i, num_factions
+
+        state.player_turn = state.factions[i]
         state.moves_left = 1
+        state.inputState = InputState.MoveGuy
 
-        // TODO spawn guys etc
+        state -> faction_start_round'
     end
 
     post_move :: fn state do
         if state.moves_left > 0 do
             case state.inputState do
-                MoveGuyDirection tup do
-                    gi :: tup[0]
-                    state.inputState = InputState.MoveGuy gi
+                MoveGuyDirection _ do
+                    state.inputState = InputState.MoveGuy
                 end
                 else do <!> end
             end
@@ -346,12 +399,10 @@ init :: fn do
             end
             Game state do
                 case state.inputState do
-                    MoveGuyDirection tup do
+                    MoveGuyDirection dir do
                         case key do
                             Space do
-                                guyI :: tup[0]
-                                dir :: tup[1]
-                                g :: state.guys[guy.faction_to_int(state.player_turn)][guyI]
+                                g :: state -> guy_to_move'
                                 g.node = graph.facingNeighbour' g.node, dir, state.graph
 
                                 post_move' state
