@@ -91,7 +91,8 @@ init :: fn do
                 i := 0
 
                 state.graph.nodes -> map(fn node ->
-                    faction := rem' i, 4
+                    faction := rem' i, 4 // TODO use actual data here
+
                     i = i + 1
 
                     ret (node.position[0], node.position[1], faction)
