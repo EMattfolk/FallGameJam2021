@@ -30,6 +30,18 @@ drawGraph :: fn graph: Graph do
     end
 end
 
+graphCenter :: fn graph: Graph ->
+    centerPosition := (0., 0.)
+    graph.nodes -> for_each' fn node do
+        centerPosition += node.position
+    end
+
+    n :: as_float' len' graph.nodes
+    halfWidth :: gfx.screenSizef() * (0.5, 0.5)
+    centerPosition = (centerPosition / (n, n)) - halfWidth
+    ret (-centerPosition[0] / 2.0, -centerPosition[1] / 2.0)
+end
+
 force_function :: fn distance ->
     (NODE_SIZE * 3.50 - distance) * 2.0
 end

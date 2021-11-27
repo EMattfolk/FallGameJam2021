@@ -290,34 +290,38 @@ init :: fn do
             Game state do
                 i := 0
 
+                offset :: graph.graphCenter' state.graph
+
                 state.graph.nodes -> map(fn node ->
                     faction := rem' i, 4 // TODO use actual data here
 
                     i = i + 1
 
-                    ret (node.position[0], node.position[1], faction)
+                    ret (node.position[0] + offset[0], node.position[1] + offset[1], faction)
                 end) -> drawVoronoiBackground'
 
-                graph.drawGraph' state.graph
+                love.graphics.translate' offset[0], offset[1]
+                do
+                    graph.drawGraph' state.graph
 
-                state.factions -> for_each' fn f do
-                    guys :: state.guys[guy.faction_to_int(f)]
-                    guys -> for_each' fn g do
-                        guy.drawGuy' g, state.graph
-                    end
-                end
-
-                case state.inputState do
-                    MoveGuyDirection tup do
-                        g :: state.guys[guy.faction_to_int(state.player_turn)][tup[0]]
-                        facing :: graph.facingNeighbour' g.node, tup[1], state.graph
-                        guy.drawGuyDirection' g, facing, state.graph
+                    state.factions -> for_each' fn f do
+                        guys :: state.guys[guy.faction_to_int(f)]
+                        guys -> for_each' fn g do
+                            guy.drawGuy' g, state.graph
+                        end
                     end
 
-                    else do end
-                end
+                    case state.inputState do
+                        MoveGuyDirection tup do
+                            g :: state.guys[guy.faction_to_int(state.player_turn)][tup[0]]
+                            facing :: graph.facingNeighbour' g.node, tup[1], state.graph
+                            guy.drawGuyDirection' g, facing, state.graph
+                        end
 
-                defaultFont.drawText' col, "Game", (0., 0.)
+                        else do end
+                    end
+                end
+                love.graphics.origin'
             end
             else do <!> end
         end
