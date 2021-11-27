@@ -84,9 +84,10 @@ drawGuy :: fn guy: Guy, g: graph.Graph do
 end
 
 drawGuyDirection :: fn guy: Guy, facing_node: int, graph: graph.Graph do
-    c := gfx.rgb' 1., 1., 1.
-    rot :: angle' graph.nodes[facing_node].position - graph.nodes[guy.node].position
-    arrow := res.img["arrow"]
-    pos :: graph.nodes[guy.node].position
+    a :: graph.nodes[facing_node].position
+    b :: graph.nodes[guy.node].position
+    rot :: angle' a - b
+    arrow :: res.img["arrow"]
+    pos :: b + (a - b) * (0.5, 0.5)
     arrow.drawCentered' pos, rot, (1., 1.)
 end
