@@ -435,7 +435,12 @@ function angle(v)
 end
 
 function dot(a, b)
-    return a[1] * b[1] + a[2] * b[2]
+    print(a, b)
+    local out = 0
+    for x = 1, #a, 1 do
+        out = out + a[x] * b[x]
+    end
+    return out
 end
 
 function magnitude_squared(a)
@@ -450,7 +455,14 @@ function __CRASH(msg)
     return function() assert(false, "crash" .. (msg or "")) end
 end
 
-normalize = __CRASH("normalize is not implemented")
+function normalize(a)
+    local mag = magnitude(a)
+    local out = {}
+    for x = 1, #a, 1 do
+        out[x] = a[x] / mag
+    end
+    return __TUPLE(out)
+end
 reflect = __CRASH("reflect is not implemented")
 debug_assertions = __CRASH("debug_assertions is not implemented")
 thread_sleep = __CRASH("thread_sleep is not implemented")

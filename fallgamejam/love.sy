@@ -25,6 +25,12 @@ ImageData :: blob {
 Quad :: blob { _003_unique_type: int, }
 Font :: blob { _004_unique_type: int, }
 
+Shader :: blob {
+    _005_unique_type: int,
+    // Vararg
+    send: fn [*] -> void,
+}
+
 LoveGraphics :: blob {
     // We need to accept multiple overloads
     // This function has 2 overloads, add 0's to the end to call it
@@ -57,6 +63,9 @@ LoveGraphics :: blob {
     newFont: fn str, int, str -> Font,
     newParticleSystem: fn *, int -> ParticleSystem,
     newQuad: fn int, int, int, int, ImageData -> Quad,
+    newShader: fn str -> Shader,
+
+    setShader: fn Shader -> void,
 
     getWidth: fn -> int,
     getHeight: fn -> int,
@@ -158,6 +167,7 @@ Love :: blob {
     mouse: LoveMouse,
     timer: LoveTimer,
     window: LoveWindow,
+    event: LoveEvent,
 }
 
 love: Love : external

@@ -8,6 +8,11 @@ Color :: blob {
     alpha: float,
 }
 
+clearShader :: fn do
+    x : fn -> void : unsafe_force' love.graphics.setShader
+    x'
+end
+
 // NOTE(ed): Might be nice to convert HSL to RGB?
 rgb :: fn r, g, b -> Color
     Color { red: r, green: g, blue: b, alpha: 1. }
@@ -20,6 +25,14 @@ stableRandomColor :: fn i: float -> Color
     g :: rem' 0.2 + i * 7.77, 1.
     b :: rem' 0.7 + i * 5.55, 1.
     rgb' r, g, b
+end
+
+screenSize :: fn -> (int, int)
+    (love.graphics.getWidth(), love.graphics.getHeight())
+end
+
+screenSizef :: fn -> (float, float)
+    (as_float(love.graphics.getWidth()), as_float(love.graphics.getHeight()))
 end
 
 setColor :: fn color do

@@ -1,10 +1,12 @@
-from /love use love
+from /love use (love, Shader)
 use /res/
 use /input
 use /gfx
 
 use graph
 use unit
+
+from /main use varargs
 
 States :: enum
     MainMenu *,
@@ -23,17 +25,57 @@ GameState :: blob {
     inputState: InputState,
 }
 
+send_shader_graph_positions :: fn shader: Shader, points do
+    // !!!!!!!! DON'T DO THIS AT HOME !!!!!!!
+    do
+        v : [int] : [
+            unsafe_force(shader),
+            unsafe_force("vertex_positions"),
+        ]
+        points -> for_each' fn x do
+            v -> push' unsafe_force' (x[0], x[1])
+        end
+        varargs(shader.send)(v)
+    end
+
+    do
+        v : [int] : [
+            unsafe_force(shader),
+            unsafe_force("vertex_colors"),
+        ]
+        points -> for_each' fn x do
+            v -> push' unsafe_force' x[2]
+        end
+        varargs(shader.send)(v)
+    end
+
+    do
+        v :: [
+            unsafe_force(shader),
+            unsafe_force("num_vertex_positions"),
+            len(points),
+        ]
+        varargs(shader.send)(v)
+    end
+end
+
 init :: fn do
 
     aFont :: gfx.aFont()
 
     scene := States.MainMenu
+    time := 0.
 
     update :: fn delta do
+        time = time + delta
+
         case scene do
             MainMenu do
             end
             Game state do
+                graph.updateGraph' state.graph, delta
+
+                // Inputs
                 case state.inputState do
                     MoveUnit unit do
                         may_dir := inputDirection'
@@ -57,14 +99,47 @@ init :: fn do
 
                     else do end
                 end
+
             end
             else do <!> end
         end
     end
 
-    col := gfx.rgb' 1., 0., 1.
+    col := gfx.rgb' 1., 0., 0.
+
+    voronoiShader :: love.graphics.newShader("res/voronoi.glsl")
 
     draw :: fn do
+        white := gfx.rgb' 1., 1., 1.
+
+        vertices :: [
+            (
+                100. + cos(time) * 50.,
+                100. + sin(time) * 30.,
+                1,
+            ),
+            (
+                200. + cos(5.2 * time) * 50.,
+                200. + sin(time) * 30.,
+                0,
+            ),
+            (
+                300. + cos(1.4 * time) * 50.,
+                100. + sin(time) * 30.,
+                2,
+            ),
+            (
+                400. + cos(2. * time) * 50.,
+                300. + sin(2. * time) * 30.,
+                3,
+            ),
+        ]
+
+        love.graphics.setShader' voronoiShader
+        send_shader_graph_positions' voronoiShader, vertices
+        gfx.drawRect' white, (0., 0.), (800., 600.)
+        gfx.clearShader'
+
         case scene do
             MainMenu do
                 aFont.drawText' col, "Menu", (0., 0.)
@@ -91,8 +166,19 @@ init :: fn do
         end
     end
 
+    scene = States.Game GameState {
+        graph: graph.createGraph(),
+        units: [unit.Unit { node: 0, },],
+        inputState: InputState.MoveUnit 0,
+    }
+
     love.keypressed = fn key, scancode, repeat do
-        print(input.strToKeyDict[key])
+        case input.strToKeyDict[key] do
+            Escape do
+                print' "Quitting game..."
+                love.event.quit' 0
+            else do end
+        end
 
         case scene do
             MainMenu do
@@ -103,8 +189,7 @@ init :: fn do
                     inputState: InputState.MoveUnit 0,
                 }
             end
-            Game do
-                print("Key pressed in game")
+            Game state do
             end
             else do <!> end
         end
@@ -122,8 +207,16 @@ Maybe :: enum
     Nothing,
 end
 
-inputDirection :: fn -> Maybe do // Maybe float
-    ret Maybe.Just (1., 1.)
+inputDirection :: fn -> Maybe do // Maybe (float, float)
+    res := (0., 0.)
+    if input.isKeyDown' input.Key.Up do res += (0., -1.) end
+    if input.isKeyDown' input.Key.Down do res += (0., 1.) end
+    if input.isKeyDown' input.Key.Left do res += (-1., 0.) end
+    if input.isKeyDown' input.Key.Right do res += (1., -0.) end
+    if res == (0., 0.,) do
+        ret Maybe.Nothing
+    end
+    ret Maybe.Just (normalize' res)
 end
 
 //use gfx
