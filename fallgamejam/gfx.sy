@@ -134,7 +134,7 @@ Image :: blob {
     getHeight: fn -> float,
     draw: fn (float, float), float, (float, float) -> void,
     drawTinted: fn Color, (float, float), float, (float, float) -> void,
-    drawCenterd: fn (float, float), float, (float, float) -> void,
+    drawCentered: fn (float, float), float, (float, float) -> void,
     drawTintedCentered: fn Color, (float, float), float, (float, float) -> void,
 }
 
@@ -167,7 +167,7 @@ newImage :: fn filepath: str -> Image
         drawTinted: fn tint, pos, rot, scale do
             drawImage' tint, img, pos, rot, scale
         end,
-        drawCenterd: fn pos, rot, scale do
+        drawCentered: fn pos, rot, scale do
             drawImageCentered' rgb(1., 1., 1.), img, pos, rot, scale
         end,
         drawTintedCentered: fn tint, pos, rot, scale do
