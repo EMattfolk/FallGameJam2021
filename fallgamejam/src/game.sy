@@ -18,6 +18,20 @@ clone :: fn list ->
     ret c
 end
 
+// Shuffle, but badly
+shuffle :: fn list: [*] do
+    if len(list) == 0 ret
+
+    le := len(list)
+    list -> for_each' fn _ do
+        a :: love.math.random(0, le-1)
+        b :: love.math.random(0, le-1)
+        temp :: list[a]
+        list[a] = list[b]
+        list[b] = temp
+    end
+end
+
 guy_to_move :: fn state ->
     ret state.guys_to_move[guy.faction_to_int(state.player_turn)] -> last'
 end
@@ -380,7 +394,8 @@ init :: fn do
                 i = i + 1
             end
 
-            state.guys_to_move[fi] = guys -> clone' // TODO shuffle
+            state.guys_to_move[fi] = guys -> clone'
+            shuffle' state.guys_to_move[fi]
         end
     end
 
