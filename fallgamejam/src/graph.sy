@@ -5,6 +5,16 @@ use /gfx
 //
 //}
 
+tile_color :: fn tile ->
+    case tile do
+        Empty ret gfx.rgb' 0.5, 0.5, 0.5
+        Factory ret gfx.rgb' 1., 0., 0.
+        else do <!> end
+    end
+
+    ret gfx.rgb' 0., 0., 0.
+end
+
 drawGraph :: fn graph: Graph do
     graph.edges -> for_each' fn edge do
         n1 := graph.nodes[edge[0]]
@@ -15,7 +25,7 @@ drawGraph :: fn graph: Graph do
     end
 
     graph.nodes -> for_each' fn node do
-        c := gfx.rgb' 1., 0., 0.
+        c :: tile_color(node.tile)
         gfx.drawCircle' c, node.position, NODE_SIZE
     end
 end
@@ -65,18 +75,18 @@ Node :: blob {
     tile: Tile,
 }
 
-new_node :: fn tile ->
+new_node :: fn tile, position ->
     width :: love.graphics.getWidth'
     height :: love.graphics.getHeight'
 
     Node {
-        position: (as_float(love.math.random(0, width)), as_float(love.math.random(0, height))),
+        position: position,
         velocity: (0., 0.),
         tile: tile,
     }
 end
 
-NODE_SIZE :: 50.
+NODE_SIZE :: 30.
 
 Tile :: enum
     Empty,
@@ -118,25 +128,68 @@ end
 createGraph :: fn -> Graph do
     Graph {
         nodes: [
-            new_node(Tile.Empty),
-            new_node(Tile.Empty),
-            new_node(Tile.Empty),
-            new_node(Tile.Empty),
-            new_node(Tile.Empty),
-            new_node(Tile.Empty),
-            new_node(Tile.Empty),
-            new_node(Tile.Empty),
+            new_node(Tile.Empty, (160., 200.)),
+            new_node(Tile.Empty, (240., 200.)),
+            new_node(Tile.Empty, (320., 200.)),
+            new_node(Tile.Empty, (400., 200.)),
+            new_node(Tile.Empty, (480., 200.)),
+            new_node(Tile.Empty, (560., 200.)),
+            new_node(Tile.Empty, (640., 200.)),
+
+            new_node(Tile.Factory 0, (160., 300.)),
+            new_node(Tile.Empty, (240., 300.)),
+            new_node(Tile.Empty, (320., 300.)),
+            new_node(Tile.Empty, (400., 300.)),
+            new_node(Tile.Empty, (480., 300.)),
+            new_node(Tile.Empty, (560., 300.)),
+            new_node(Tile.Factory 0, (640., 300.)),
+
+            new_node(Tile.Empty, (160., 400.)),
+            new_node(Tile.Empty, (240., 400.)),
+            new_node(Tile.Empty, (320., 400.)),
+            new_node(Tile.Empty, (400., 400.)),
+            new_node(Tile.Empty, (480., 400.)),
+            new_node(Tile.Empty, (560., 400.)),
+            new_node(Tile.Empty, (640., 400.)),
+
+            new_node(Tile.Empty, (400., 500.)),
         ],
         edges: [
             (0, 1),
             (1, 2),
             (2, 3),
-            (1, 3),
-            // (4, 3),
-            (4, 6),
-            // (4, 5),
-            (5, 7),
-            (6, 7),
+            (3, 4),
+            (4, 5),
+            (5, 6),
+
+            (0, 7),
+            (1, 9),
+            (3, 10),
+            (5, 11),
+            (6, 13),
+
+            (7, 8),
+            (8, 9),
+            (9, 10),
+            (10, 11),
+            (11, 12),
+            (12, 13),
+
+            (7, 14),
+            (8, 15),
+            (10, 17),
+            (12, 19),
+            (13, 20),
+
+            (14, 15),
+            (15, 16),
+            (16, 17),
+            (17, 18),
+            (18, 19),
+            (19, 20),
+
+            (16, 21),
+            (18, 21),
         ],
     }
 end
