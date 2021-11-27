@@ -435,7 +435,6 @@ function angle(v)
 end
 
 function dot(a, b)
-    print(a, b)
     local out = 0
     for x = 1, #a, 1 do
         out = out + a[x] * b[x]
