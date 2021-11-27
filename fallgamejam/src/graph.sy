@@ -1,7 +1,6 @@
 from /love use love
 use /gfx
 use guy
-
 from guy use Faction
 
 //Camera :: blob {
