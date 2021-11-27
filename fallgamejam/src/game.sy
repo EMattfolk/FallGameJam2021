@@ -24,6 +24,7 @@ GameState :: blob {
     guys: {int: [guy.Guy]},
     factions: [guy.Faction],
     player_turn: guy.Faction,
+    moves_left: int,
     inputState: InputState,
 }
 
@@ -83,6 +84,7 @@ init :: fn do
                 },
                 factions: [guy.Faction.Blueberry, guy.Faction.Strawberry],
                 player_turn: guy.Faction.Blueberry,
+                moves_left: 1,
                 inputState: InputState.MoveGuy 0,
             }
         end),
@@ -238,8 +240,25 @@ init :: fn do
         guys :: state.guys[guy.faction_to_int(faction)]
         guy_index :: love.math.random(0, len(guys) - 1)
         state.inputState = InputState.MoveGuy guy_index
+        state.moves_left = 1
 
         // TODO spawn guys etc
+    end
+
+    post_move :: fn state do
+        if state.moves_left > 0 do
+            case state.inputState do
+                MoveGuyDirection tup do
+                    gi :: tup[0]
+                    state.inputState = InputState.MoveGuy gi
+                end
+                else do <!> end
+            end
+
+            state.moves_left = state.moves_left - 1
+        else do
+            next_turn' state
+        end
     end
 
     love.keypressed = fn _key, scancode, repeat do
@@ -279,7 +298,7 @@ init :: fn do
                                 g :: state.guys[guy.faction_to_int(state.player_turn)][guyI]
                                 g.node = graph.facingNeighbour' g.node, dir, state.graph
 
-                                next_turn' state
+                                post_move' state
                             end
                             else do end
                         end
