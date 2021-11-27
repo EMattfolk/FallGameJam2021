@@ -167,6 +167,7 @@ Love :: blob {
     mouse: LoveMouse,
     timer: LoveTimer,
     window: LoveWindow,
+    event: LoveEvent,
 }
 
 love: Love : external

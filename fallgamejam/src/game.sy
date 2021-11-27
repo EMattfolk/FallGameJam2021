@@ -121,7 +121,12 @@ init :: fn do
     }
 
     love.keypressed = fn key, scancode, repeat do
-        print(input.strToKeyDict[key])
+        case input.strToKeyDict[key] do
+            Escape do
+                print' "Quitting game..."
+                love.event.quit' 0
+            else do end
+        end
 
         case scene do
             MainMenu do
@@ -130,8 +135,7 @@ init :: fn do
                     graph: graph.createGraph(),
                 }
             end
-            Game do
-                print("Key pressed in game")
+            Game state do
             end
             else do <!> end
         end
