@@ -1,0 +1,18 @@
+use /gfx
+use graph
+
+drawUnit :: fn unit: Unit, graph: graph.Graph do
+    unitPosition := graph.nodes[unit.node].position
+    c := gfx.rgb' 0., 0., 1.
+    gfx.drawCircle' c, unitPosition, UNIT_SIZE
+end
+UNIT_SIZE :: 25.
+
+drawUnitDirection :: fn unit: Unit, facing_node: int, graph: graph.Graph do
+    c := gfx.rgb' 1., 1., 1.
+    gfx.drawLine' c, graph.nodes[unit.node].position, graph.nodes[facing_node].position
+end
+
+Unit :: blob {
+    node: int, // node index
+}

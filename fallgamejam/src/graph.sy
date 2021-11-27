@@ -10,7 +10,7 @@ drawGraph :: fn graph: Graph do
         n1 := graph.nodes[edge[0]]
         n2 := graph.nodes[edge[1]]
 
-        c := gfx.rgb' 0., 1., 0.
+        c := gfx.rgb' 0., 0., 0.
         gfx.drawLine' c, n1.position, n2.position
     end
 
@@ -81,6 +81,38 @@ NODE_SIZE :: 50.
 Tile :: enum
     Empty,
     Factory int,
+end
+
+neighboursOf :: fn node: int, graph -> [int] do
+    neighbours: [int] = []
+    graph.edges -> for_each' fn edge do
+        if node == edge[0] do
+            push' neighbours, edge[1]
+        end else if node == edge[1] do
+            push' neighbours, edge[0]
+        end
+    end
+
+    neighbours
+end
+
+facingNeighbour :: fn node: int, direction: (float, float), graph -> int do
+    nDirection := normalize' direction
+    origo := graph.nodes[node].position
+    neighbours := neighboursOf' node, graph
+    best := -1
+    bestScalar := -2.
+    neighbours -> for_each' fn neighbour do
+        nNeighbour := normalize(graph.nodes[neighbour].position - origo)
+        cosPhi := dot' nDirection, nNeighbour
+
+        if cosPhi > bestScalar do
+            best = neighbour
+            bestScalar = cosPhi
+        end
+    end
+
+    ret best
 end
 
 createGraph :: fn -> Graph do
