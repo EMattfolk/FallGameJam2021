@@ -1,3 +1,18 @@
-from /love use love
+use /gfx
 
-// Declare resources
+img :: {:}
+
+loadResources :: fn do
+    img["guy_b_1"] = gfx.newImage("res/guy_b_1.png")
+    img["guy_b_2"] = gfx.newImage("res/guy_b_2.png")
+    img["guy_b_3"] = gfx.newImage("res/guy_b_3.png")
+    img["guy_c_1"] = gfx.newImage("res/guy_c_1.png")
+    img["guy_c_2"] = gfx.newImage("res/guy_c_2.png")
+    img["guy_c_3"] = gfx.newImage("res/guy_c_3.png")
+    img["guy_g_1"] = gfx.newImage("res/guy_g_1.png")
+    img["guy_g_2"] = gfx.newImage("res/guy_g_2.png")
+    img["guy_g_3"] = gfx.newImage("res/guy_g_3.png")
+    img["guy_s_1"] = gfx.newImage("res/guy_s_1.png")
+    img["guy_s_2"] = gfx.newImage("res/guy_s_2.png")
+    img["guy_s_3"] = gfx.newImage("res/guy_s_3.png")
+end

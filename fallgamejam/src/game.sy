@@ -51,6 +51,8 @@ end
 
 init :: fn do
 
+    res.loadResources()
+
     aFont :: gfx.aFont()
 
     scene := States.MainMenu
