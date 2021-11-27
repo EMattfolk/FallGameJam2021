@@ -9,6 +9,18 @@ Faction :: enum
     Strawberry,
 end
 
+faction_to_int :: fn faction -> int
+    case faction do
+        Blueberry ret 0
+        Cloudberry ret 1
+        Gooseberry ret 2
+        Strawberry ret 3
+        else do end
+    end
+
+    ret 0
+end
+
 guy_images :: fn faction -> [gfx.Image]
     get_images :: fn path ->
         ret ["1", "2", "3"] -> map(fn index ->
@@ -39,11 +51,11 @@ new_guy :: fn faction, node ->
     }
 end
 
-drawGuy :: fn guy: Guy, graph: graph.Graph do
+drawGuy :: fn guy: Guy, g: graph.Graph do
     images :: guy.faction -> guy_images'
     image :: images[0]
     tint :: gfx.rgb' 1., 1., 1.
-    node :: graph.nodes[guy.node]
+    node :: g.nodes[guy.node]
     pos :: node.position - (image.getHeight() / 2., image.getWidth() / 2.)
     images[0].draw' pos, 0., (1., 1.)
 end

@@ -14,14 +14,15 @@ States :: enum
 end
 
 InputState :: enum
-    None,
     MoveGuy int, // guy index
     MoveGuyDirection (int, (float, float)), // guy index, direction [0, 2*pi)
 end
 
 GameState :: blob {
     graph: graph.Graph,
-    guys: [guy.Guy],
+    guys: {int: [guy.Guy]},
+    factions: [guy.Faction],
+    player_turn: guy.Faction,
     inputState: InputState,
 }
 
@@ -137,14 +138,18 @@ init :: fn do
                 end) -> drawVoronoiBackground'
 
                 graph.drawGraph' state.graph
-                state.guys -> for_each' fn u do
-                    guy.drawGuy' u, state.graph
+
+                state.factions -> for_each' fn f do
+                    guys :: state.guys[guy.faction_to_int(f)]
+                    guys -> for_each' fn g do
+                        guy.drawGuy' g, state.graph
+                    end
                 end
 
                 case state.inputState do
                     MoveGuyDirection tup do
-                        g := state.guys[tup[0]]
-                        facing := graph.facingNeighbour' g.node, tup[1], state.graph
+                        g :: state.guys[guy.faction_to_int(state.player_turn)][tup[0]]
+                        facing :: graph.facingNeighbour' g.node, tup[1], state.graph
                         guy.drawGuyDirection' g, facing, state.graph
                     end
 
@@ -159,7 +164,16 @@ init :: fn do
 
     scene = States.Game GameState {
         graph: graph.createGraph(),
-        guys: [guy.new_guy(guy.Faction.Blueberry, 0)],
+        guys: {
+            guy.faction_to_int(guy.Faction.Blueberry): [
+                guy.new_guy(guy.Faction.Blueberry, 0),
+            ],
+            guy.faction_to_int(guy.Faction.Strawberry): [
+                guy.new_guy(guy.Faction.Strawberry, 1),
+            ],
+        },
+        factions: [guy.Faction.Blueberry, guy.Faction.Strawberry],
+        player_turn: guy.Faction.Blueberry,
         inputState: InputState.MoveGuy 0,
     }
 
@@ -182,9 +196,15 @@ init :: fn do
                             Space do
                                 guyI :: tup[0]
                                 dir :: tup[1]
-                                g :: state.guys[guyI]
+                                g :: state.guys[guy.faction_to_int(state.player_turn)][guyI]
                                 g.node = graph.facingNeighbour' g.node, dir, state.graph
-                            end else do end
+
+                                // Next state
+                                mod :: len' state.factions
+                                i :: rem' guy.faction_to_int(state.player_turn) + 1, mod
+                                state.player_turn = state.factions[i]
+                            end
+                            else do end
                         end
                     end else do end
                 end
@@ -196,7 +216,13 @@ init :: fn do
                 print("starting game")
                 scene = States.Game GameState {
                     graph: graph.createGraph(),
-                    guys: [guy.new_guy(guy.Faction.Blueberry, 0)],
+                    guys: {
+                        guy.faction_to_int(guy.Faction.Blueberry): [
+                            guy.new_guy(guy.Faction.Blueberry, 0),
+                        ],
+                    },
+                    factions: [guy.Faction.Blueberry],
+                    player_turn: guy.Faction.Blueberry,
                     inputState: InputState.MoveGuy 0,
                 }
             end
