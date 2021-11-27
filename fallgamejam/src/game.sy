@@ -76,39 +76,27 @@ init :: fn do
     draw :: fn do
         white := gfx.rgb' 1., 1., 1.
 
-        vertices :: [
-            (
-                100. + cos(time) * 50.,
-                100. + sin(time) * 30.,
-                1,
-            ),
-            (
-                200. + cos(5.2 * time) * 50.,
-                200. + sin(time) * 30.,
-                0,
-            ),
-            (
-                300. + cos(1.4 * time) * 50.,
-                100. + sin(time) * 30.,
-                2,
-            ),
-            (
-                400. + cos(2. * time) * 50.,
-                300. + sin(2. * time) * 30.,
-                3,
-            ),
-        ]
-
-        love.graphics.setShader' voronoiShader
-        send_shader_graph_positions' voronoiShader, vertices
-        gfx.drawRect' white, (0., 0.), (800., 600.)
-        gfx.clearShader'
+        drawVoronoiBackground :: fn vertices: [(*, *, *)] do
+            love.graphics.setShader' voronoiShader
+            send_shader_graph_positions' voronoiShader, vertices
+            gfx.drawRect' white, (0., 0.), (800., 600.)
+            gfx.clearShader'
+        end
 
         case scene do
             MainMenu do
                 aFont.drawText' col, "Menu", (200., 200.)
             end
             Game state do
+                i := 0
+
+                state.graph.nodes -> map(fn node ->
+                    faction := rem' i, 4
+                    i = i + 1
+
+                    ret (node.position[0], node.position[1], faction)
+                end) -> drawVoronoiBackground'
+
                 graph.drawGraph' state.graph
                 aFont.drawText' col, "Game", (200., 200.)
             end
