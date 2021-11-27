@@ -2,11 +2,16 @@ from /love use love
 use /res/
 use /input
 use /gfx
+use graph
 
 States :: enum
     MainMenu *,
-    Game *,
+    Game GameState,
 end
+
+GameState :: blob {
+    graph: graph.Graph,
+}
 
 init :: fn do
 
@@ -15,6 +20,14 @@ init :: fn do
     scene := States.MainMenu
 
     update :: fn delta do
+        case scene do
+            MainMenu do
+            end
+            Game state do
+                graph.updateGraph' state.graph, delta
+            end
+            else do <!> end
+        end
     end
 
     col := gfx.rgb' 1., 0., 1.
@@ -24,12 +37,17 @@ init :: fn do
             MainMenu do
                 aFont.drawText' col, "Menu", (200., 200.)
             end
-            Game do
+            Game state do
+                graph.drawGraph' state.graph
                 aFont.drawText' col, "Game", (200., 200.)
             end
             else do <!> end
         end
     end
+
+    scene = States.Game GameState {
+        graph: graph.createGraph(),
+    }
 
     love.keypressed = fn key, scancode, repeat do
         print(input.strToKeyDict[key])
@@ -37,7 +55,9 @@ init :: fn do
         case scene do
             MainMenu do
                 print("starting game")
-                scene = States.Game
+                scene = States.Game GameState {
+                    graph: graph.createGraph(),
+                }
             end
             Game do
                 print("Key pressed in game")
