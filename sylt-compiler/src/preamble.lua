@@ -50,7 +50,7 @@ __ASSIGN_INDEX = function(o, i, v)
     end
     if m._type == "blob" then
         local e = o[i]
-        assert(e, "Accessing fields \"" .. i .. "\" - which doesn't exist")
+        assert(e ~= nil, "Accessing fields \"" .. i .. "\" - which doesn't exist")
         o[i] = v
         return
     end
