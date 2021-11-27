@@ -44,6 +44,13 @@ drawLine :: fn color, a, b do
     love.graphics.line' a[0], a[1], b[0], b[1]
 end
 
+drawLinew :: fn color, w, a, b do
+    setColor' color
+    love.graphics.setLineWidth' w
+    love.graphics.line' a[0], a[1], b[0], b[1]
+    love.graphics.setLineWidth' 1.
+end
+
 drawCircle :: fn color, p, r do
     setColor' color
     love.graphics.circle' "fill", p[0], p[1], r

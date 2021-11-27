@@ -71,8 +71,8 @@ drawGraph :: fn graph: Graph do
         n1 := graph.nodes[edge[0]]
         n2 := graph.nodes[edge[1]]
 
-        c := gfx.rgb' 0., 0., 0.
-        gfx.drawLine' c, n1.position, n2.position
+        c := gfx.rgba' 1., 1., 1., 0.3
+        gfx.drawLinew' c, 2., n1.position, n2.position
     end
 
     graph.nodes -> for_each' drawNode
@@ -91,7 +91,7 @@ graphCenter :: fn graph: Graph ->
 end
 
 force_function :: fn distance ->
-    (NODE_SIZE * 3.50 - distance) * 2.0
+    (NODE_SIZE * 4.0 - distance) * 2.0
 end
 
 updateGraph :: fn graph: Graph, delta do
