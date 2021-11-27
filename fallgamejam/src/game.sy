@@ -163,26 +163,31 @@ init :: fn do
         inputState: InputState.MoveUnit 0,
     }
 
-    love.keypressed = fn key, scancode, repeat do
-        case input.strToKeyDict[key] do
+    love.keypressed = fn _key, scancode, repeat do
+        key := input.strToKeyDict[_key]
+        case key do
             Escape do
                 print' "Quitting game..."
                 love.event.quit' 0
+            end else do end
+        end
+
+        case scene do
+            MainMenu do
             end
-            Space do
-                case scene do
-                    Game state do
-                        case state.inputState do
-                            MoveUnitDirection tup do
+            Game state do
+                case state.inputState do
+                    MoveUnitDirection tup do
+                        case key do
+                            Space do
                                 unitI := tup[0]
                                 facing := graph.facingNeighbour' state.units[tup[0]].node, tup[1], state.graph
                                 state.units[unitI].node = facing
-                            end
-                            else do end
+                            end else do end
                         end
                     end else do end
                 end
-            end else do end
+            end else do <!> end
         end
 
         case scene do
