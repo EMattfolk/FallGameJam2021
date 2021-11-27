@@ -107,8 +107,7 @@ drawTextFT :: fn color, text, pos, alignment, maxWidth, r, s do
 end
 
 // Returns a font that can be used
-aFont :: fn -> Font
-    f :: love.graphics.getFont()
+createFont :: fn f: l.Font -> Font
     Font {
         drawText: fn color, text, pos do
             love.graphics.setFont' f
