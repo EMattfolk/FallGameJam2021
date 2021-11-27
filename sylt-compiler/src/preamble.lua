@@ -282,13 +282,13 @@ end
 
 __BLOB_META = { _type = "blob" }
 __BLOB_META.__eq = function(a, b)
-    for k, _ in pairs(a) do
-        if not b[k] then
+    for k, v in pairs(a) do
+        if b[k] == nil or v ~= b[k] then
             return false
         end
     end
     for k, _ in pairs(b) do
-        if not a[k] then
+        if a[k] == nil then
             return false
         end
     end

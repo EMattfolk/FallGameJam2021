@@ -449,15 +449,21 @@ init :: fn do
                                 g :: state -> guy_to_move'
                                 g.node = graph.facingNeighbour' g.node, dir, state.graph
 
+                                ff :: guy.faction_to_int(g.faction)
+
                                 state.factions -> for_each' fn other_fn do
                                     if g.faction == other_fn ret
 
-                                    fn_guys := state.guys[guy.faction_to_int(other_fn)]
+                                    // friendly faction
+                                    ef := guy.faction_to_int(other_fn)
 
                                     kill := false
-                                    state.guys[guy.faction_to_int(other_fn)] = fn_guys -> filter' fn other_guy -> do
+                                    state.guys[ef] = state.guys[ef] -> filter' fn other_guy -> do
                                         if other_guy.node == g.node and not kill do
                                             kill = true
+                                            state.guys_to_move[ef] = state.guys_to_move[ef] -> filter' fn other_other_guy -> do
+                                                other_other_guy != other_guy
+                                            end
                                             ret false
                                         else do
                                             ret true
@@ -465,8 +471,12 @@ init :: fn do
                                     end
 
                                     if kill do
-                                        state.guys[guy.faction_to_int(g.faction)] = state.guys[guy.faction_to_int(g.faction)] -> filter' fn guy -> do
-                                            guy != g
+                                        print' g
+                                        state.guys[ff] = state.guys[ff] -> filter' fn friendly_guy -> do
+                                            print' "Comparison: "
+                                            print' friendly_guy
+                                            print' friendly_guy != g
+                                            friendly_guy != g
                                         end
                                     end
                                 end
