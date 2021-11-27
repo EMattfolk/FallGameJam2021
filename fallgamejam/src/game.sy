@@ -102,6 +102,14 @@ init :: fn do
             Game state do
                 graph.updateGraph' state.graph, delta
 
+                // Update animation timers
+                state.factions -> for_each' fn f do
+                    guys :: state.guys[guy.faction_to_int(f)]
+                    guys -> for_each' fn g do
+                        guy.updateGuy' g, delta
+                    end
+                end
+
                 // Inputs
                 case state.inputState do
                     MoveGuy guy do

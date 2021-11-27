@@ -42,22 +42,32 @@ end
 Guy :: blob {
     node: int, // node index
     faction: Faction,
+    time: float, // For animating
 }
 
 new_guy :: fn faction, node ->
     ret Guy {
         node: node,
         faction: faction,
+        time: 0.0,
     }
 end
 
+updateGuy :: fn guy: Guy, delta: float do
+    guy.time += delta
+end
+
+ANIMATION_SPEED :: .1
+ANIMATION_SEQ :: [0, 1, 2, 1]
+
 drawGuy :: fn guy: Guy, g: graph.Graph do
     images :: guy.faction -> guy_images'
-    image :: images[0]
+    frame :: rem(as_int(guy.time / ANIMATION_SPEED), len(ANIMATION_SEQ))
+    image :: images[ANIMATION_SEQ[frame]]
     tint :: gfx.rgb' 1., 1., 1.
     node :: g.nodes[guy.node]
-    pos :: node.position - (image.getHeight() / 2., image.getWidth() / 2.)
-    images[0].draw' pos, 0., (1., 1.)
+    pos :: node.position
+    image.drawCentered' pos, 0., (1., 1.)
 end
 
 drawGuyDirection :: fn guy: Guy, facing_node: int, graph: graph.Graph do
