@@ -122,8 +122,6 @@ init :: fn do
     update :: fn delta do
         time = time + delta
 
-        print' playerControllers[0]
-
         case scene do
             MainMenu do
             end
