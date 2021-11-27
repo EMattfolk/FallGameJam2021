@@ -293,7 +293,7 @@ init :: fn do
                 offset :: graph.graphCenter' state.graph
 
                 state.graph.nodes -> map(fn node ->
-                    faction := rem' i, 4 // TODO use actual data here
+                    faction := graph.shaderColor(node)
 
                     i = i + 1
 
