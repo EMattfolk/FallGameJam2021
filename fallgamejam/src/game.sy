@@ -4,12 +4,13 @@ use /input
 use /gfx
 
 use graph
+use menu
 use guy
 
 from /main use varargs
 
 States :: enum
-    MainMenu *,
+    MainMenu menu.Menu,
     Game GameState,
 end
 
@@ -64,16 +65,39 @@ init :: fn do
 
     res.loadResources()
 
-    aFont :: gfx.aFont()
+    defaultFont :: gfx.createFont(love.graphics.getFont())
+    mainMenuFont :: gfx.createFont(res.font["menu"])
 
-    scene := States.MainMenu
+    scene := States.MainMenu menu.createMenu([])
+    scene = States.MainMenu menu.createMenu([
+        ("Start", fn do
+            scene = States.Game GameState {
+                graph: graph.createGraph(),
+                guys: {
+                    guy.faction_to_int(guy.Faction.Blueberry): [
+                        guy.new_guy(guy.Faction.Blueberry, 0),
+                    ],
+                    guy.faction_to_int(guy.Faction.Strawberry): [
+                        guy.new_guy(guy.Faction.Strawberry, 1),
+                    ],
+                },
+                factions: [guy.Faction.Blueberry, guy.Faction.Strawberry],
+                player_turn: guy.Faction.Blueberry,
+                inputState: InputState.MoveGuy 0,
+            }
+        end),
+        ("Exit", fn do
+            love.event.quit' 0
+        end)
+    ])
+
     time := 0.
 
     update :: fn delta do
         time = time + delta
 
         case scene do
-            MainMenu do
+            MainMenu _ do
             end
             Game state do
                 graph.updateGraph' state.graph, delta
@@ -108,6 +132,7 @@ init :: fn do
         end
     end
 
+
     col := gfx.rgb' 1., 0., 0.
 
     voronoiShader :: love.graphics.newShader("res/voronoi.glsl")
@@ -123,8 +148,50 @@ init :: fn do
         end
 
         case scene do
-            MainMenu do
-                aFont.drawText' col, "Menu", (0., 0.)
+            MainMenu menu do
+                BACKGROUND_COLOR :: gfx.rgb' 50. / 255., 50. / 255., 50. / 255.
+                gfx.drawRect' BACKGROUND_COLOR, (0., 0.), gfx.screenSizef()
+
+                MENU_COLOR :: gfx.rgb' 1., 1., 1.
+                HEADER_COLOR :: gfx.rgb' 209. / 255., 59. / 255., 57. / 255.
+                SELECTED_COLOR :: gfx.rgb' 229. / 255., 126. / 255., 124. / 255.
+                MENU_SIZE :: 1.
+                MIDDLE :: gfx.screenSizef() / (2., 2.)
+
+                // Header
+                headerBox :: (600.0, 0.0)
+                mainMenuFont.drawTextFT(
+                    HEADER_COLOR,
+                    "Age of Sylt",
+                    MIDDLE  - headerBox / (2., 2.) - (0., 250.),
+                    gfx.Alignment.Center,
+                    600.0,
+                    0.0,
+                    MENU_SIZE
+                )
+
+                // Choices
+                choiceBox :: (300.0, 0.0)
+                offset := (0.0, -80.)
+                i := 0
+                menu.choices -> for_each' fn choice do
+                    color := MENU_COLOR
+                    if i == menu.position do
+                        color = SELECTED_COLOR
+                    end
+
+                    mainMenuFont.drawTextFT(
+                        color,
+                        choice[0],
+                        MIDDLE - choiceBox / (2., 2.) + offset,
+                        gfx.Alignment.Center,
+                        choiceBox[0],
+                        0.0,
+                        MENU_SIZE
+                    )
+                    offset += (0.0, 80.0)
+                    i += 1
+                end
             end
             Game state do
                 i := 0
@@ -156,26 +223,11 @@ init :: fn do
                     else do end
                 end
 
-                aFont.drawText' col, "Game", (0., 0.)
+                defaultFont.drawText' col, "Game", (0., 0.)
             end
             else do <!> end
         end
     end
-
-    scene = States.Game GameState {
-        graph: graph.createGraph(),
-        guys: {
-            guy.faction_to_int(guy.Faction.Blueberry): [
-                guy.new_guy(guy.Faction.Blueberry, 0),
-            ],
-            guy.faction_to_int(guy.Faction.Strawberry): [
-                guy.new_guy(guy.Faction.Strawberry, 1),
-            ],
-        },
-        factions: [guy.Faction.Blueberry, guy.Faction.Strawberry],
-        player_turn: guy.Faction.Blueberry,
-        inputState: InputState.MoveGuy 0,
-    }
 
     next_turn :: fn state do
         mod :: len' state.factions
@@ -200,7 +252,22 @@ init :: fn do
         end
 
         case scene do
-            MainMenu do
+            MainMenu menu do
+                case key do
+                    Return do
+                        menu.select()
+                    end
+                    Space do
+                        menu.select()
+                    end
+                    Up do
+                        menu.up()
+                    end
+                    Down do
+                        menu.down()
+                    end
+                    else do end
+                end
             end
             Game state do
                 case state.inputState do
@@ -219,26 +286,6 @@ init :: fn do
                     end else do end
                 end
             end else do <!> end
-        end
-
-        case scene do
-            MainMenu do
-                print("starting game")
-                scene = States.Game GameState {
-                    graph: graph.createGraph(),
-                    guys: {
-                        guy.faction_to_int(guy.Faction.Blueberry): [
-                            guy.new_guy(guy.Faction.Blueberry, 0),
-                        ],
-                    },
-                    factions: [guy.Faction.Blueberry],
-                    player_turn: guy.Faction.Blueberry,
-                    inputState: InputState.MoveGuy 0,
-                }
-            end
-            Game state do
-            end
-            else do <!> end
         end
     end
 

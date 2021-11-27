@@ -60,7 +60,7 @@ LoveGraphics :: blob {
     setFont: fn Font -> void,
 
     newImage: fn str -> *,
-    newFont: fn str, int, str -> Font,
+    newFont: fn str, int -> Font,
     newParticleSystem: fn *, int -> ParticleSystem,
     newQuad: fn int, int, int, int, ImageData -> Quad,
     newShader: fn str -> Shader,

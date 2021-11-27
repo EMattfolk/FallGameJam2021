@@ -1,0 +1,23 @@
+Menu :: blob {
+    choices: [(str, fn -> void)],
+    up: fn -> void,
+    down: fn -> void,
+    select: fn -> void,
+    position: int,
+}
+
+createMenu :: fn choices: [(str, fn -> void)] -> Menu do
+    Menu {
+        choices: choices,
+        up: fn do
+            self.position = rem' (self.position + 1), len(self.choices)
+        end,
+        down: fn do
+            self.position = rem' (self.position - 1), len(self.choices)
+        end,
+        select: fn do
+            self.choices[self.position][1]()
+        end,
+        position: 0,
+    }
+end

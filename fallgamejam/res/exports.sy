@@ -2,9 +2,12 @@ use /gfx
 use /sfx
 
 from /sfx use SoundType
+from /love use love
 
 img :: {:}
 sound :: {:}
+
+font :: {:}
 
 loadResources :: fn do
     img["guy_b_1"] = gfx.newImage("res/guy_b_1.png")
@@ -24,4 +27,6 @@ loadResources :: fn do
     sound["created"] = sfx.newSound("res/created.wav", false, SoundType.Static)
     sound["death"] = sfx.newSound("res/death.wav", false, SoundType.Static)
     sound["explosion"] = sfx.newSound("res/explosion.wav", false, SoundType.Static)
+
+    font["menu"] = love.graphics.newFont("res/Enchanted Land.otf", 100)
 end
