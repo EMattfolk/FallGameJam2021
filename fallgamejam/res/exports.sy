@@ -1,6 +1,10 @@
 use /gfx
+use /sfx
+
+from /sfx use SoundType
 
 img :: {:}
+sound :: {:}
 
 loadResources :: fn do
     img["guy_b_1"] = gfx.newImage("res/guy_b_1.png")
@@ -15,4 +19,9 @@ loadResources :: fn do
     img["guy_s_1"] = gfx.newImage("res/guy_s_1.png")
     img["guy_s_2"] = gfx.newImage("res/guy_s_2.png")
     img["guy_s_3"] = gfx.newImage("res/guy_s_3.png")
+
+    sound["blip"] = sfx.newSound("res/blip.wav", false, SoundType.Static)
+    sound["created"] = sfx.newSound("res/created.wav", false, SoundType.Static)
+    sound["death"] = sfx.newSound("res/death.wav", false, SoundType.Static)
+    sound["explosion"] = sfx.newSound("res/explosion.wav", false, SoundType.Static)
 end
