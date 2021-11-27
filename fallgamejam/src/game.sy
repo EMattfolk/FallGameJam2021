@@ -82,6 +82,7 @@ GameState :: blob {
     graph: graph.Graph,
     guys: {int: [guy.Guy]},
     guys_to_move: {int: [guy.Guy]},
+    score: (int, int, int, int),
     factions: [guy.Faction],
     player_turn: guy.Faction,
     moves_left: int,
@@ -151,6 +152,7 @@ init :: fn do
                 },
                 factions: [guy.Faction.Blueberry, guy.Faction.Cloudberry],
                 player_turn: guy.Faction.Blueberry,
+                score: (0, 0, 0, 0),
                 moves_left: 1,
                 inputState: InputState.MoveGuy,
             }
@@ -211,6 +213,7 @@ init :: fn do
             end
             Game state do
                 graph.updateGraph' state.graph, delta
+                graph.scoreGraph' state.graph
 
                 // Update animation timers
                 state.factions -> for_each' fn f do
@@ -372,6 +375,10 @@ init :: fn do
         to_move :: state.guys_to_move[fi]
 
         guys :: state.guys[fi]
+
+        if len(to_move) == 0 and fi == 0 do
+            print' "START!"
+        end
 
         if len(to_move) == 0 do
             i := 0
