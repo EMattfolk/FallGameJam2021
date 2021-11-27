@@ -1,0 +1,54 @@
+use /res/exports
+use /gfx
+use graph
+
+Faction :: enum
+    Blueberry,
+    Cloudberry,
+    Gooseberry,
+    Strawberry,
+end
+
+guy_images :: fn faction -> [gfx.Image]
+    get_images :: fn path ->
+        ret ["1", "2", "3"] -> map(fn index ->
+            exports.img[path + "_" + index]
+        end)
+    end
+
+    case faction do
+        Blueberry ret get_images("guy_b")
+        Cloudberry ret get_images("guy_c")
+        Gooseberry ret get_images("guy_g")
+        Strawberry ret get_images("guy_s")
+        else do end
+    end
+
+    ret get_images("guy_s")
+end
+
+Guy :: blob {
+    node: int, // node index
+    faction: Faction,
+}
+
+new_guy :: fn faction, node ->
+    ret Guy {
+        node: node,
+        faction: faction,
+    }
+end
+
+drawGuy :: fn guy: Guy, graph: graph.Graph do
+    images :: guy.faction -> guy_images'
+    image :: images[0]
+    tint :: gfx.rgb' 1., 1., 1.
+    node :: graph.nodes[guy.node]
+    pos :: node.position - (image.getHeight() / 2., image.getWidth() / 2.)
+    images[0].draw' pos, 0., (1., 1.)
+end
+
+drawGuyDirection :: fn guy: Guy, facing_node: int, graph: graph.Graph do
+    c := gfx.rgb' 1., 1., 1.
+    gfx.drawLine' c, graph.nodes[guy.node].position, graph.nodes[facing_node].position
+end
