@@ -1,4 +1,3 @@
-use /res/exports
 use /gfx
 use graph
 use /res/
@@ -38,7 +37,7 @@ end
 guy_images :: fn faction -> [gfx.Image]
     get_images :: fn path ->
         ret ["1", "2", "3"] -> map(fn index ->
-            exports.img[path + "_" + index]
+            res.img[path + "_" + index]
         end)
     end
 
@@ -86,5 +85,8 @@ end
 
 drawGuyDirection :: fn guy: Guy, facing_node: int, graph: graph.Graph do
     c := gfx.rgb' 1., 1., 1.
-    gfx.drawLine' c, graph.nodes[guy.node].position, graph.nodes[facing_node].position
+    rot :: angle' graph.nodes[facing_node].position - graph.nodes[guy.node].position
+    arrow := res.img["arrow"]
+    pos :: graph.nodes[guy.node].position
+    arrow.drawCentered' pos, rot, (1., 1.)
 end
