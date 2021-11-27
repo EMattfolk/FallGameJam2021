@@ -2,15 +2,25 @@ from /love use love
 use /res/
 use /input
 use /gfx
+
 use graph
+use unit
 
 States :: enum
     MainMenu *,
     Game GameState,
 end
 
+InputState :: enum
+    None,
+    MoveUnit int, // unit index
+    MoveUnitDirection (int, (float, float)), // unit index, direction [0, 2*pi)
+end
+
 GameState :: blob {
     graph: graph.Graph,
+    units: [unit.Unit],
+    inputState: InputState,
 }
 
 init :: fn do
@@ -20,6 +30,36 @@ init :: fn do
     scene := States.MainMenu
 
     update :: fn delta do
+        case scene do
+            MainMenu do
+            end
+            Game state do
+                case state.inputState do
+                    MoveUnit unit do
+                        may_dir := inputDirection'
+                        case may_dir do
+                            Just dir do
+                                state.inputState = InputState.MoveUnitDirection (unit, dir)
+                            end
+                            else do end
+                        end
+                    end
+
+                    MoveUnitDirection tup do
+                        may_dir := inputDirection'
+                        case may_dir do
+                            Just dir do
+                                state.inputState = InputState.MoveUnitDirection (tup[0], dir)
+                            end
+                            else do end
+                        end
+                    end
+
+                    else do end
+                end
+            end
+            else do <!> end
+        end
     end
 
     col := gfx.rgb' 1., 0., 1.
@@ -27,12 +67,25 @@ init :: fn do
     draw :: fn do
         case scene do
             MainMenu do
-                aFont.drawText' col, "Menu", (200., 200.)
+                aFont.drawText' col, "Menu", (0., 0.)
             end
             Game state do
-                print' state
                 graph.drawGraph' state.graph
-                aFont.drawText' col, "Game", (200., 200.)
+                state.units -> for_each' fn u do
+                    unit.drawUnit' u, state.graph
+                end
+
+                case state.inputState do
+                    MoveUnitDirection tup do
+                        facing := graph.facingNeighbour' tup[0], tup[1], state.graph
+                        u := state.units[tup[0]]
+                        unit.drawUnitDirection' u, facing, state.graph
+                    end
+
+                    else do end
+                end
+
+                aFont.drawText' col, "Game", (0., 0.)
             end
             else do <!> end
         end
@@ -46,6 +99,8 @@ init :: fn do
                 print("starting game")
                 scene = States.Game GameState {
                     graph: graph.createGraph(),
+                    units: [unit.Unit { node: 0, },],
+                    inputState: InputState.MoveUnit 0,
                 }
             end
             Game do
@@ -61,6 +116,16 @@ init :: fn do
     love.update = update
     love.draw = draw
 end
+
+Maybe :: enum
+    Just *,
+    Nothing,
+end
+
+inputDirection :: fn -> Maybe do // Maybe float
+    ret Maybe.Just (1., 1.)
+end
+
 //use gfx
 //from gfx use (stableRandomColor as rcol)
 //use input
