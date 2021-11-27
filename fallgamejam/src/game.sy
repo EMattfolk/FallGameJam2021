@@ -139,15 +139,19 @@ init :: fn do
 
         case scene do
             MainMenu menu do
+                BACKGROUND_COLOR :: gfx.rgb' 50. / 255., 50. / 255., 50. / 255.
+                gfx.drawRect' BACKGROUND_COLOR, (0., 0.), gfx.screenSizef()
+
                 MENU_COLOR :: gfx.rgb' 1., 1., 1.
-                SELECTED_COLOR :: gfx.rgb' 1., .5, .5
+                HEADER_COLOR :: gfx.rgb' 209. / 255., 59. / 255., 57. / 255.
+                SELECTED_COLOR :: gfx.rgb' 229. / 255., 126. / 255., 124. / 255.
                 MENU_SIZE :: 1.
                 MIDDLE :: gfx.screenSizef() / (2., 2.)
 
                 // Header
                 headerBox :: (600.0, 0.0)
                 mainMenuFont.drawTextFT(
-                    MENU_COLOR,
+                    HEADER_COLOR,
                     "Age of Sylt",
                     MIDDLE  - headerBox / (2., 2.) - (0., 250.),
                     gfx.Alignment.Center,
