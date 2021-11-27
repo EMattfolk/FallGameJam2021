@@ -177,6 +177,19 @@ init :: fn do
         inputState: InputState.MoveGuy 0,
     }
 
+    next_turn :: fn state do
+        mod :: len' state.factions
+        i :: rem' guy.faction_to_int(state.player_turn) + 1, mod
+        faction :: state.factions[i]
+
+        state.player_turn = faction
+        guys :: state.guys[guy.faction_to_int(faction)]
+        guy_index :: love.math.random(0, len(guys) - 1)
+        state.inputState = InputState.MoveGuy guy_index
+
+        // TODO spawn guys etc
+    end
+
     love.keypressed = fn _key, scancode, repeat do
         key := input.strToKeyDict[_key]
         case key do
@@ -199,10 +212,7 @@ init :: fn do
                                 g :: state.guys[guy.faction_to_int(state.player_turn)][guyI]
                                 g.node = graph.facingNeighbour' g.node, dir, state.graph
 
-                                // Next state
-                                mod :: len' state.factions
-                                i :: rem' guy.faction_to_int(state.player_turn) + 1, mod
-                                state.player_turn = state.factions[i]
+                                next_turn' state
                             end
                             else do end
                         end
