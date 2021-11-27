@@ -464,12 +464,12 @@ init :: fn do
                                 g :: state -> guy_to_move'
                                 g.node = graph.facingNeighbour' g.node, dir, state.graph
 
+                                kill := false
                                 state.factions -> for_each' fn other_fn do
                                     if g.faction == other_fn ret
 
                                     fn_guys := state.guys[guy.faction_to_int(other_fn)]
 
-                                    kill := false
                                     state.guys[guy.faction_to_int(other_fn)] = fn_guys -> filter' fn other_guy -> do
                                         if other_guy.node == g.node and not kill do
                                             kill = true
@@ -482,6 +482,31 @@ init :: fn do
                                     if kill do
                                         state.guys[guy.faction_to_int(g.faction)] = state.guys[guy.faction_to_int(g.faction)] -> filter' fn guy -> do
                                             guy != g
+                                        end
+                                    end
+                                end
+
+                                node :: state.graph.nodes[g.node]
+
+                                f :: g.faction
+
+                                if not kill do
+                                    case node.tile do
+                                        Captured _ do
+                                            node.tile = graph.Tile.Captured f
+                                        end
+                                        Empty do
+                                            node.tile = graph.Tile.Captured f
+                                        end
+                                        Factory _ do
+                                            node.tile = graph.Tile.Factory f
+                                        end
+                                        EmptyFactory do
+                                            node.tile = graph.Tile.Factory f
+                                        end
+                                        else do
+                                            <!>
+                                            // TODO shouldn't be able to move to enemy base
                                         end
                                     end
                                 end
