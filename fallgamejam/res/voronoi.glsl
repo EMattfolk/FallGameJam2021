@@ -1,5 +1,5 @@
-extern vec2 vertex_positions[20];
-extern int vertex_colors[20];
+extern vec2 vertex_positions[100];
+extern int vertex_colors[100];
 extern int num_vertex_positions;
 
 vec4 colors[4] = vec4[](
