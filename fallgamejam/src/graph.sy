@@ -5,6 +5,16 @@ use /gfx
 //
 //}
 
+tile_color :: fn tile ->
+    case tile do
+        Empty ret gfx.rgb' 0.5, 0.5, 0.5
+        Factory ret gfx.rgb' 1., 0., 0.
+        else do <!> end
+    end
+
+    ret gfx.rgb' 0., 0., 0.
+end
+
 drawGraph :: fn graph: Graph do
     graph.edges -> for_each' fn edge do
         n1 := graph.nodes[edge[0]]
@@ -15,7 +25,7 @@ drawGraph :: fn graph: Graph do
     end
 
     graph.nodes -> for_each' fn node do
-        c := gfx.rgb' 1., 0., 0.
+        c :: tile_color(node.tile)
         gfx.drawCircle' c, node.position, NODE_SIZE
     end
 end
@@ -126,13 +136,13 @@ createGraph :: fn -> Graph do
             new_node(Tile.Empty, (560., 200.)),
             new_node(Tile.Empty, (640., 200.)),
 
-            new_node(Tile.Empty, (160., 300.)),
+            new_node(Tile.Factory 0, (160., 300.)),
             new_node(Tile.Empty, (240., 300.)),
             new_node(Tile.Empty, (320., 300.)),
             new_node(Tile.Empty, (400., 300.)),
             new_node(Tile.Empty, (480., 300.)),
             new_node(Tile.Empty, (560., 300.)),
-            new_node(Tile.Empty, (640., 300.)),
+            new_node(Tile.Factory 0, (640., 300.)),
 
             new_node(Tile.Empty, (160., 400.)),
             new_node(Tile.Empty, (240., 400.)),
