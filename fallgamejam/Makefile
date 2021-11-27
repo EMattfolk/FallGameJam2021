@@ -1,9 +1,8 @@
-run: main.lua
-	love .
+.PHONY: run sylt
 
-main.lua: main.sy *.sy res/*.sy src/*.sy | sylt
-	rm -rf main.lua
-	../target/debug/sylt -c $@ $< || rm $@
+run: | sylt
+	../target/debug/sylt -c main.lua main.sy
+	love .
 
 sylt:
 	cd .. && cargo b
