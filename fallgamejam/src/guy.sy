@@ -1,6 +1,7 @@
 use /gfx
 use graph
 use /res/
+from /love use love
 
 Faction :: enum
     Blueberry,
@@ -88,6 +89,7 @@ drawGuyDirection :: fn guy: Guy, facing_node: int, graph: graph.Graph do
     b :: graph.nodes[guy.node].position
     rot :: angle' a - b
     arrow :: res.img["arrow"]
-    pos :: b + (a - b) * (0.5, 0.5)
+    t :: 0.5 + 0.05 * sin' 4.0 * love.timer.getTime()
+    pos :: b + (a - b) * (t, t)
     arrow.drawCentered' pos, rot, (1., 1.)
 end
