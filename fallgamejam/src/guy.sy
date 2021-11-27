@@ -1,6 +1,7 @@
 use /res/exports
 use /gfx
 use graph
+use /res/
 
 Faction :: enum
     Blueberry,
@@ -19,6 +20,18 @@ faction_to_int :: fn faction -> int
     end
 
     ret 0
+end
+
+crest_image :: fn faction -> gfx.Image
+    case faction do
+        Blueberry ret res.img["crest_b"]
+        Cloudberry ret res.img["crest_c"]
+        Gooseberry ret res.img["crest_g"]
+        Strawberry ret res.img["crest_s"]
+        else do <!> end
+    end
+
+    ret res.img["crest_s"]
 end
 
 guy_images :: fn faction -> [gfx.Image]

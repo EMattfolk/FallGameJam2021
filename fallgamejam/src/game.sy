@@ -258,6 +258,17 @@ init :: fn do
                     offset += (0.0, 80.0)
                     i += 1
                 end
+
+                // Crests
+                B_OFFEST :: (200., 0.)
+                C_OFFSET :: (-200., 0.)
+                G_OFFSET :: (100., 200.)
+                S_OFFSET :: (-100., 200.)
+                SCALE :: (2.0, 2.0)
+                guy.crest_image(guy.Faction.Blueberry).drawCentered' MIDDLE + B_OFFEST, 0.0, SCALE
+                guy.crest_image(guy.Faction.Cloudberry).drawCentered' MIDDLE + C_OFFSET, 0.0, SCALE
+                guy.crest_image(guy.Faction.Gooseberry).drawCentered' MIDDLE + G_OFFSET, 0.0, SCALE
+                guy.crest_image(guy.Faction.Strawberry).drawCentered' MIDDLE + S_OFFSET, 0.0, SCALE
             end
             Game state do
                 i := 0
