@@ -66,8 +66,11 @@ Node :: blob {
 }
 
 new_node :: fn tile ->
+    width :: love.graphics.getWidth'
+    height :: love.graphics.getHeight'
+
     Node {
-        position: (as_float(love.math.random(0, 100)), as_float(love.math.random(0, 100))),
+        position: (as_float(love.math.random(0, width)), as_float(love.math.random(0, height))),
         velocity: (0., 0.),
         tile: tile,
     }

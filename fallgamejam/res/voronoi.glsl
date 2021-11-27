@@ -3,10 +3,10 @@ extern int vertex_colors[20];
 extern int num_vertex_positions;
 
 vec4 colors[4] = vec4[](
-        vec4(1., 0., 0., 1.),
-        vec4(0., 1., 0., 1.),
-        vec4(0., 0., 1., 1.),
-        vec4(1., 1., 0., 1.)
+        vec4(0.820, 0.230, 0.000, 1.),
+        vec4(0.384, 0.196, 0.663, 1.),
+        vec4(0.800, 0.594, 0.275, 1.),
+        vec4(0.467, 0.729, 0.275, 1.)
 );
 
 float distance_squared(vec2 p1, vec2 p2) {
@@ -14,17 +14,14 @@ float distance_squared(vec2 p1, vec2 p2) {
         return dot(diff, diff);
 }
 
-float get_border(vec2 pixel_coord, ivec2 nearest_vertices) {
+float distance_to_border(vec2 pixel_coord, ivec2 nearest_vertices) {
         vec2 a = vertex_positions[nearest_vertices.x];
         vec2 b = vertex_positions[nearest_vertices.y];
 
         vec2 midpoint = (a + b) * 0.5;
         vec2 direction = normalize(b - a);
 
-        float d = -dot(pixel_coord - midpoint, direction);
-
-        if (d < 5.0) return 1.0;
-        return 0.0;
+        return dot(midpoint - pixel_coord, direction);
 }
 
 vec4 effect(vec4 color, Image texture, vec2 tc, vec2 pixel_coord) {
@@ -47,12 +44,13 @@ vec4 effect(vec4 color, Image texture, vec2 tc, vec2 pixel_coord) {
 
         vec4 nearest_color = colors[vertex_colors[nearest_vertices.x]];
         vec2 dist = sqrt(min_dist_sq);
-        vec4 cell_color = mix(vec4(1), nearest_color, 100.0 / dist.x);
+        vec4 cell_color = mix(vec4(1), nearest_color, clamp(0, 1, 100.0 / dist.x));
 
-        float border = get_border(pixel_coord, nearest_vertices);
         vec4 border_color = vec4(0, 0, 0, 1);
+        float dist_border = distance_to_border(pixel_coord, nearest_vertices);
 
-        vec4 fragment_color = mix(cell_color, border_color, border);
+        float is_border = 1.0 - smoothstep(0.0, 5.0, dist_border);
+        vec4 fragment_color = mix(cell_color, border_color, is_border);
 
         return fragment_color;
 }
