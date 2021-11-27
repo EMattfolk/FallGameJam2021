@@ -10,6 +10,7 @@ Faction :: enum
     Strawberry,
 end
 
+// THIS IS THE SOURCE OF TRUTH
 faction_to_int :: fn faction -> int
     case faction do
         Blueberry ret 0
