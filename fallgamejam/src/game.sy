@@ -10,6 +10,22 @@ use guy
 
 from /main use varargs
 
+makeFullscreen :: fn do
+    w := l.WindowFlags {
+        fullscreen: true,
+        fullscreentype: "desktop",
+        vsync: 0,
+        msaa: 2,
+        resizable: false,
+        borderless: false,
+        centered: false,
+        display: 0,
+        minwidth: 100,
+        minheight: 100,
+    }
+    love.window.setMode' 0, 0, w
+end
+
 newController :: fn -> Controller do
     Controller {
         joystick: (0., 0.),
@@ -80,6 +96,7 @@ send_shader_graph_positions :: fn shader: Shader, points do
 end
 
 init :: fn do
+    makeFullscreen'
 
     res.loadResources()
 
@@ -209,7 +226,7 @@ init :: fn do
         drawVoronoiBackground :: fn vertices: [(*, *, *)] do
             love.graphics.setShader' voronoiShader
             send_shader_graph_positions' voronoiShader, vertices
-            gfx.drawRect' white, (0., 0.), (800., 600.)
+            gfx.drawRect' white, (0., 0.), (as_float(love.graphics.getWidth'), as_float(love.graphics.getHeight'))
             gfx.clearShader'
         end
 
