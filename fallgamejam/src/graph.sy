@@ -1,5 +1,6 @@
 from /love use love
 use /gfx
+use guy
 
 //Camera :: blob {
 //
@@ -90,7 +91,7 @@ NODE_SIZE :: 30.
 
 Tile :: enum
     Empty,
-    Factory int,
+    Factory guy.Faction,
 end
 
 neighboursOf :: fn node: int, graph -> [int] do
@@ -136,13 +137,13 @@ createGraph :: fn -> Graph do
             new_node(Tile.Empty, (560., 200.)),
             new_node(Tile.Empty, (640., 200.)),
 
-            new_node(Tile.Factory 0, (160., 300.)),
+            new_node(Tile.Factory guy.Faction.Blueberry, (160., 300.)),
             new_node(Tile.Empty, (240., 300.)),
             new_node(Tile.Empty, (320., 300.)),
             new_node(Tile.Empty, (400., 300.)),
             new_node(Tile.Empty, (480., 300.)),
             new_node(Tile.Empty, (560., 300.)),
-            new_node(Tile.Factory 0, (640., 300.)),
+            new_node(Tile.Factory guy.Faction.Strawberry, (640., 300.)),
 
             new_node(Tile.Empty, (160., 400.)),
             new_node(Tile.Empty, (240., 400.)),
