@@ -22,6 +22,11 @@ loadResources :: fn do
     img["guy_s_1"] = gfx.newImage("res/guy_s_1.png")
     img["guy_s_2"] = gfx.newImage("res/guy_s_2.png")
     img["guy_s_3"] = gfx.newImage("res/guy_s_3.png")
+    img["guy_s_3"] = gfx.newImage("res/guy_s_3.png")
+    img["crest_b"] = gfx.newImage("res/crest_b.png")
+    img["crest_c"] = gfx.newImage("res/crest_c.png")
+    img["crest_g"] = gfx.newImage("res/crest_g.png")
+    img["crest_s"] = gfx.newImage("res/crest_s.png")
 
     sound["blip"] = sfx.newSound("res/blip.wav", false, SoundType.Static)
     sound["created"] = sfx.newSound("res/created.wav", false, SoundType.Static)

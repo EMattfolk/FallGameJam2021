@@ -22,6 +22,22 @@ guy_to_move :: fn state ->
     ret state.guys_to_move[guy.faction_to_int(state.player_turn)] -> last'
 end
 
+makeFullscreen :: fn do
+    w := l.WindowFlags {
+        fullscreen: true,
+        fullscreentype: "desktop",
+        vsync: 0,
+        msaa: 2,
+        resizable: false,
+        borderless: false,
+        centered: false,
+        display: 0,
+        minwidth: 100,
+        minheight: 100,
+    }
+    love.window.setMode' 0, 0, w
+end
+
 newController :: fn -> Controller do
     Controller {
         joystick: (0., 0.),
@@ -93,6 +109,7 @@ send_shader_graph_positions :: fn shader: Shader, points do
 end
 
 init :: fn do
+    makeFullscreen'
 
     res.loadResources()
 
@@ -181,6 +198,14 @@ init :: fn do
             Game state do
                 graph.updateGraph' state.graph, delta
 
+                // Update animation timers
+                state.factions -> for_each' fn f do
+                    guys :: state.guys[guy.faction_to_int(f)]
+                    guys -> for_each' fn g do
+                        guy.updateGuy' g, delta
+                    end
+                end
+
                 // Inputs
                 case state.inputState do
                     MoveGuy do
@@ -227,7 +252,7 @@ init :: fn do
         drawVoronoiBackground :: fn vertices: [(*, *, *)] do
             love.graphics.setShader' voronoiShader
             send_shader_graph_positions' voronoiShader, vertices
-            gfx.drawRect' white, (0., 0.), (800., 600.)
+            gfx.drawRect' white, (0., 0.), (as_float(love.graphics.getWidth'), as_float(love.graphics.getHeight'))
             gfx.clearShader'
         end
 
@@ -276,38 +301,52 @@ init :: fn do
                     offset += (0.0, 80.0)
                     i += 1
                 end
+
+                // Crests
+                B_OFFEST :: (200., 0.)
+                C_OFFSET :: (-200., 0.)
+                G_OFFSET :: (100., 200.)
+                S_OFFSET :: (-100., 200.)
+                SCALE :: (2.0, 2.0)
+                guy.crest_image(guy.Faction.Blueberry).drawCentered' MIDDLE + B_OFFEST, 0.0, SCALE
+                guy.crest_image(guy.Faction.Cloudberry).drawCentered' MIDDLE + C_OFFSET, 0.0, SCALE
+                guy.crest_image(guy.Faction.Gooseberry).drawCentered' MIDDLE + G_OFFSET, 0.0, SCALE
+                guy.crest_image(guy.Faction.Strawberry).drawCentered' MIDDLE + S_OFFSET, 0.0, SCALE
             end
             Game state do
                 i := 0
 
+                offset :: graph.graphCenter' state.graph
+
                 state.graph.nodes -> map(fn node ->
-                    faction := rem' i, 4 // TODO use actual data here
+                    faction := graph.shaderColor(node)
 
                     i = i + 1
 
-                    ret (node.position[0], node.position[1], faction)
+                    ret (node.position[0] + offset[0], node.position[1] + offset[1], faction)
                 end) -> drawVoronoiBackground'
 
-                graph.drawGraph' state.graph
+                love.graphics.translate' offset[0], offset[1]
+                do
+                    graph.drawGraph' state.graph
 
-                state.factions -> for_each' fn f do
-                    guys :: state.guys[guy.faction_to_int(f)]
-                    guys -> for_each' fn g do
-                        guy.drawGuy' g, state.graph
-                    end
-                end
-
-                case state.inputState do
-                    MoveGuyDirection dir do
-                        g :: state -> guy_to_move'
-                        facing :: graph.facingNeighbour' g.node, dir, state.graph
-                        guy.drawGuyDirection' g, facing, state.graph
+                    state.factions -> for_each' fn f do
+                        guys :: state.guys[guy.faction_to_int(f)]
+                        guys -> for_each' fn g do
+                            guy.drawGuy' g, state.graph
+                        end
                     end
 
-                    else do end
+                    case state.inputState do
+                        MoveGuyDirection dir do
+                            g :: state -> guy_to_move'
+                            facing :: graph.facingNeighbour' g.node, dir, state.graph
+                            guy.drawGuyDirection' g, facing, state.graph
+                        end
+                        else do end
+                    end
                 end
-
-                defaultFont.drawText' col, "Game", (0., 0.)
+                love.graphics.origin'
             end
             else do <!> end
         end
@@ -323,13 +362,18 @@ init :: fn do
         if len(to_move) == 0 do
             i := 0
             loop i < len(state.graph.nodes) do
+                spawn :: fn faction do
+                    if faction == state.player_turn do
+                        guys -> push' guy.new_guy(faction, i)
+                    end
+                end
+
                 case state.graph.nodes[i].tile do
+                    Base faction do
+                        spawn' faction
+                    end
                     Factory faction do
-                        if faction == state.player_turn do
-                            guys -> push' guy.new_guy(faction, i)
-                        else do
-                            print' faction
-                        end
+                        spawn' faction
                     end
                     else do end
                 end

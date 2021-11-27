@@ -1,19 +1,64 @@
 from /love use love
 use /gfx
 use guy
+from guy use Faction
 
 //Camera :: blob {
 //
 //}
+factionColors :: [
+    gfx.rgb(0.384, 0.196, 0.663),
+    gfx.rgb(0.800, 0.594, 0.275),
+    gfx.rgb(0.467, 0.729, 0.275),
+    gfx.rgb(0.820, 0.230, 0.000),
+]
 
-tile_color :: fn tile ->
+factionColor :: fn faction ->
+    factionColors[guy.faction_to_int(faction)]
+end
+
+shaderColor :: fn node -> int
+    case node.tile do
+        Base faction ret guy.faction_to_int(faction)
+        Factory faction ret guy.faction_to_int(faction)
+        Empty ret 4
+        EmptyFactory ret 4
+        else do <!> end
+    end
+    ret 4
+end
+
+tileColor :: fn tile ->
     case tile do
+        Base faction ret factionColor(faction)
         Empty ret gfx.rgb' 0.5, 0.5, 0.5
-        Factory ret gfx.rgb' 1., 0., 0.
+        EmptyFactory ret gfx.rgb' 0.2, 0.2, 0.2
+        Factory faction ret factionColor(faction)
         else do <!> end
     end
 
     ret gfx.rgb' 0., 0., 0.
+end
+
+drawNode :: fn node: Node do
+    case node.tile do
+        Base faction do
+            guy.crest_image(faction).drawCentered' node.position, 0.0, (1., 1.)
+        end
+        Factory faction do
+            c :: tileColor(node.tile)
+            gfx.drawCircle' c, node.position, NODE_SIZE
+        end
+        Empty do
+            c :: gfx.rgb' 0.5, 0.5, 0.5
+            gfx.drawCircle' c, node.position, NODE_SIZE
+        end
+        EmptyFactory do
+            c :: gfx.rgb' 0.2, 0.2, 0.2
+            gfx.drawCircle' c, node.position, NODE_SIZE
+        end
+        else do <!> end
+    end
 end
 
 drawGraph :: fn graph: Graph do
@@ -25,10 +70,19 @@ drawGraph :: fn graph: Graph do
         gfx.drawLine' c, n1.position, n2.position
     end
 
+    graph.nodes -> for_each' drawNode
+end
+
+graphCenter :: fn graph: Graph ->
+    centerPosition := (0., 0.)
     graph.nodes -> for_each' fn node do
-        c :: tile_color(node.tile)
-        gfx.drawCircle' c, node.position, NODE_SIZE
+        centerPosition += node.position
     end
+
+    n :: as_float' len' graph.nodes
+    halfWidth :: gfx.screenSizef() * (0.5, 0.5)
+    centerPosition = (centerPosition / (n, n)) - halfWidth
+    ret (-centerPosition[0] / 2.0, -centerPosition[1] / 2.0)
 end
 
 force_function :: fn distance ->
@@ -90,8 +144,10 @@ end
 NODE_SIZE :: 30.
 
 Tile :: enum
+    Base Faction,
+    Factory Faction,
     Empty,
-    Factory guy.Faction,
+    EmptyFactory,
 end
 
 neighboursOf :: fn node: int, graph -> [int] do
@@ -137,15 +193,15 @@ createGraph :: fn -> Graph do
             new_node(Tile.Empty, (560., 200.)),
             new_node(Tile.Empty, (640., 200.)),
 
-            new_node(Tile.Factory guy.Faction.Blueberry, (160., 300.)),
-            new_node(Tile.Empty, (240., 300.)),
+            new_node(Tile.Base Faction.Blueberry, (160., 300.)),
+            new_node(Tile.Base Faction.Gooseberry, (240., 300.)),
             new_node(Tile.Empty, (320., 300.)),
             new_node(Tile.Empty, (400., 300.)),
             new_node(Tile.Empty, (480., 300.)),
             new_node(Tile.Empty, (560., 300.)),
-            new_node(Tile.Factory guy.Faction.Cloudberry, (640., 300.)),
+            new_node(Tile.Base Faction.Cloudberry, (640., 300.)),
 
-            new_node(Tile.Empty, (160., 400.)),
+            new_node(Tile.Base Faction.Strawberry, (160., 400.)),
             new_node(Tile.Empty, (240., 400.)),
             new_node(Tile.Empty, (320., 400.)),
             new_node(Tile.Empty, (400., 400.)),

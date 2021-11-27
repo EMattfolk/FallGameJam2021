@@ -1,12 +1,13 @@
-extern vec2 vertex_positions[20];
-extern int vertex_colors[20];
+extern vec2 vertex_positions[100];
+extern int vertex_colors[100];
 extern int num_vertex_positions;
 
-vec4 colors[4] = vec4[](
-        vec4(0.820, 0.230, 0.000, 1.),
+vec4 colors[5] = vec4[](
         vec4(0.384, 0.196, 0.663, 1.),
         vec4(0.800, 0.594, 0.275, 1.),
-        vec4(0.467, 0.729, 0.275, 1.)
+        vec4(0.467, 0.729, 0.275, 1.),
+        vec4(0.820, 0.230, 0.000, 1.),
+        vec4(0.500, 0.500, 0.500, 1.)
 );
 
 float distance_squared(vec2 p1, vec2 p2) {
