@@ -655,8 +655,6 @@ init :: fn do
             end
 
             Game state do
-                love.graphics.origin'
-
                 i := 0
                 state.factions -> for_each' fn fac do
                     score := 0
@@ -722,17 +720,17 @@ init :: fn do
                         else do end
                     end
                 end
-                love.graphics.origin'
 
+                res.particle["death_b"].draw(gfx.rgb' 1.0, 1.0, 1.0)
+                res.particle["death_c"].draw(gfx.rgb' 1.0, 1.0, 1.0)
+                res.particle["death_g"].draw(gfx.rgb' 1.0, 1.0, 1.0)
+                res.particle["death_s"].draw(gfx.rgb' 1.0, 1.0, 1.0)
+
+                love.graphics.origin'
             end
 
             else do <!> end
         end
-
-        res.particle["death_b"].draw(gfx.rgb' 1.0, 1.0, 1.0)
-        res.particle["death_c"].draw(gfx.rgb' 1.0, 1.0, 1.0)
-        res.particle["death_g"].draw(gfx.rgb' 1.0, 1.0, 1.0)
-        res.particle["death_s"].draw(gfx.rgb' 1.0, 1.0, 1.0)
     end
 
     love.keypressed = fn _key, scancode, repeat do
