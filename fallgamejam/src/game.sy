@@ -159,21 +159,59 @@ next_turn :: fn state, showVictory: fn * -> void do
         state.turns_until_score = love.math.random(4, 10) * len(state.factions)
 
         if state.num_fests >= 3 do
-            scores :: [
-                state.score[0],
-                state.score[1],
-                state.score[2],
-                state.score[3],
-            ]
-            max_score := 0
-            winner := state.factions[0]
-            range(len(state.factions)) -> for_each' fn i do
-                if scores[i] > max_score do
-                    max_score = scores[i]
-                    winner = state.factions[i]
+            detect_winner_by_score :: fn score ->
+                scores :: [score[0], score[1], score[2], score[3]]
+
+                max_score := 0
+                winner := Maybe.Nothing
+                range(len(state.factions)) -> for_each' fn i do
+                    if scores[i] > max_score do
+                        max_score = scores[i]
+                        winner = Maybe.Just state.factions[i]
+                    else if scores[i] == max_score do
+                        winner = Maybe.Nothing
+                    end
                 end
+
+                winner
             end
-            showVictory' winner
+
+            detect_winner_by_guys :: fn ->
+                max_guys := 0
+                winner := Maybe.Nothing
+                state.factions -> for_each' fn faction do
+                    fi :: faction_to_int' faction
+                    g :: len(state.guys[fi])
+                    if g > max_guys do
+                        max_guys = g
+                        winner = Maybe.Just faction
+                    else if g == max_guys do
+                        winner = Maybe.Nothing
+                    end
+                end
+
+                winner
+            end
+
+            winner := detect_winner_by_score' state.score
+            case winner do
+                Just winner do
+                    showVictory' winner
+                    ret
+                end
+                else do end
+            end
+
+            winner = detect_winner_by_guys'
+            case winner do
+                Just winner do
+                    showVictory' winner
+                    ret
+                end
+                else do end
+            end
+
+            showVictory' state.factions[0]
         else do
             state.num_fests += 1
         end
