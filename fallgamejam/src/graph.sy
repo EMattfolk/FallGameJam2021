@@ -1,5 +1,6 @@
 from /love use love
 use /gfx
+use /sfx
 use /res/
 use guy
 from guy use (Faction, faction_to_int)
@@ -132,7 +133,8 @@ graphCenter :: fn graph: Graph ->
 end
 
 force_function :: fn distance ->
-    (NODE_SIZE * 4.0 - distance) * 2.0
+    t :: (NODE_SIZE * 5.0 - distance) * 2.0
+    t
 end
 
 updateGraph :: fn graph: Graph, delta do
@@ -149,12 +151,17 @@ updateGraph :: fn graph: Graph, delta do
         screen_center :: gfx.screenSizef() * (0.5, 0.5)
         node.velocity += (screen_center - node.position) * (delta, delta)
 
+        if node.is_pinned do
+            f :: 2.0
+            node.velocity += (node.pinned - node.position) * (f, f)
+        end
+
         force :: 400.
         graph.nodes -> for_each' fn other do
             diff :: node.position - other.position
             mag :: magnitude_squared' diff
-            if mag > 5. do
-                node.velocity += (force, force) * diff / (mag, mag)
+            if mag > 0.1 do
+                node.velocity += (force, force) * diff * (10.0, 10.0) / (mag, mag)
             end
         end
 
@@ -174,16 +181,35 @@ Node :: blob {
     position: (float, float),
     velocity: (float, float),
     tile: Tile,
+    is_pinned: bool,
+    pinned: (float, float),
 }
 
 new_node :: fn tile, position ->
     width :: love.graphics.getWidth'
     height :: love.graphics.getHeight'
+    offset :: (sfx.random(-100., 100.), sfx.random(-100., 100.))
 
     Node {
-        position: position,
-        velocity: (0., 0.),
+        position: position + offset,
+        velocity: offset * (20., 20.),
         tile: tile,
+        is_pinned: false,
+        pinned: position,
+    }
+end
+
+new_node_pin :: fn tile, position ->
+    width :: love.graphics.getWidth'
+    height :: love.graphics.getHeight'
+    offset :: (sfx.random(-100., 100.), sfx.random(-100., 100.))
+
+    Node {
+        position: position + offset,
+        velocity: offset * (20., 20.),
+        tile: tile,
+        is_pinned: true,
+        pinned: position,
     }
 end
 
@@ -275,12 +301,12 @@ createGraph :: fn -> Graph do
             (1, 2),
             (2, 3),
             (3, 4),
-            (4, 5),
+            // (4, 5),
             (5, 6),
 
             (0, 7),
             (1, 9),
-            (3, 10),
+            // (3, 10),
             (5, 11),
             (6, 13),
 
@@ -310,10 +336,10 @@ createGraph :: fn -> Graph do
     }
 end
 
-createGraphFactory :: fn -> Graph do
+createTwoPlayer :: fn -> Graph do
     Graph {
         nodes: [
-            new_node(Tile.EmptyFactory, (160., 200.)),
+            new_node(Tile.Empty, (160., 200.)),
             new_node(Tile.Empty, (240., 200.)),
             new_node(Tile.Empty, (320., 200.)),
             new_node(Tile.Empty, (400., 200.)),
@@ -322,14 +348,14 @@ createGraphFactory :: fn -> Graph do
             new_node(Tile.Empty, (640., 200.)),
 
             new_node(Tile.Base Faction.Blueberry, (160., 300.)),
-            new_node(Tile.Base Faction.Gooseberry, (240., 300.)),
+            new_node(Tile.Empty, (240., 300.)),
             new_node(Tile.Empty, (320., 300.)),
             new_node(Tile.Empty, (400., 300.)),
             new_node(Tile.Empty, (480., 300.)),
             new_node(Tile.Empty, (560., 300.)),
             new_node(Tile.Base Faction.Cloudberry, (640., 300.)),
 
-            new_node(Tile.Base Faction.Strawberry, (160., 400.)),
+            new_node(Tile.Empty, (160., 400.)),
             new_node(Tile.Empty, (240., 400.)),
             new_node(Tile.Empty, (320., 400.)),
             new_node(Tile.Empty, (400., 400.)),
@@ -337,7 +363,7 @@ createGraphFactory :: fn -> Graph do
             new_node(Tile.Empty, (560., 400.)),
             new_node(Tile.Empty, (640., 400.)),
 
-            new_node(Tile.Empty, (400., 500.)),
+            new_node(Tile.EmptyFactory, (400., 500.)),
         ],
         edges: [
             (0, 1),
@@ -378,3 +404,208 @@ createGraphFactory :: fn -> Graph do
         ],
     }
 end
+
+createThreePlayerGraph :: fn -> Graph do
+    s :: 2.0
+    Graph {
+        nodes: [
+           new_node(Tile.Base Faction.Blueberry, (0., 300.)),
+           new_node(Tile.Empty, (-300., 200.)),
+           new_node_pin(Tile.EmptyFactory, (-200. * s, 200. * s)),
+           new_node(Tile.Empty, (0., 200.)),
+           new_node_pin(Tile.EmptyFactory, (200. * s, 200. * s)),
+           new_node(Tile.Empty, (300., 200.)),
+           new_node(Tile.Empty, (-100., 100.)),
+
+           new_node_pin(Tile.EmptyFactory, (0., 0.)),
+           new_node(Tile.Empty, (100., 100.)),
+           new_node(Tile.Empty, (-200., -100.)),
+           new_node(Tile.Empty, (0., -100.)),
+           new_node(Tile.Empty, (200., -100.)),
+           new_node(Tile.Base Faction.Gooseberry, (-300., -200.)),
+           new_node_pin(Tile.EmptyFactory, (0. * s, -200. * s)),
+
+           new_node(Tile.Base Faction.Cloudberry, (300., -200.)),
+           new_node(Tile.Empty, (0., -300.)),
+        ],
+        edges: [
+            (0, 2),
+            (0, 3),
+            (0, 4),
+            (1, 2),
+            (2, 3),
+            (2, 6),
+            (2, 9),
+
+            (2, 12),
+            (3, 6),
+            (3, 8),
+            (3, 4),
+            (3, 7),
+            (4, 11),
+            (4, 5),
+            (4, 8),
+
+            (4, 14),
+            (6, 9),
+            (6, 7),
+            (7, 8),
+            (7, 9),
+            (7, 10),
+            (7, 11),
+            (8, 11),
+            (9, 10),
+
+            (9, 12),
+            (9, 13),
+            (10, 11),
+            (10, 13),
+            (11, 13),
+            (11, 14),
+            (12, 13),
+
+            (13, 15),
+            (13, 14),
+       ],
+    }
+end
+
+createFourPlayerGraph :: fn -> Graph do
+    Graph {
+        nodes: [
+            new_node(Tile.Empty, (50., 0.)),
+            new_node(Tile.Empty, (-50., 0.)),
+            new_node(Tile.Empty, (-40., 0.)),
+            new_node(Tile.Empty, (-40., 20.)),
+            new_node(Tile.Empty, (-40., -20.)),
+
+            new_node(Tile.Base Faction.Blueberry, (-30., 30.)),
+            new_node(Tile.Empty, (-30., 10.)),
+            new_node(Tile.Empty, (-30., -10.)),
+            new_node(Tile.Base Faction.Strawberry, (-30., -30.)),
+            new_node(Tile.Empty, (-20., -40.)),
+
+            new_node(Tile.Empty, (-20., 40.)),
+            new_node(Tile.Empty, (-10., 30.)),
+            new_node(Tile.Empty, (-20., 20.)),
+            new_node(Tile.Empty, (-20., -20.)),
+            new_node(Tile.Empty, (-10., -30.)),
+
+            new_node(Tile.Empty, (0., -40.)),
+            new_node(Tile.Empty, (0., -50.)),
+            new_node(Tile.Empty, (0., 50.)),
+            new_node(Tile.Empty, (0., 40.)),
+            new_node(Tile.Empty, (10., 30.)),
+
+            new_node(Tile.Empty, (20., 20.)),
+            new_node(Tile.EmptyFactory, (0., 10.)),
+            new_node(Tile.Empty, (-10., 0.)),
+            new_node(Tile.Empty, (10., 0.)),
+            new_node(Tile.EmptyFactory, (0., -10.)),
+
+            new_node(Tile.Empty, (20., 40.)),
+            new_node(Tile.Base Faction.Gooseberry, (30., 30.)),
+            new_node(Tile.Empty, (30., 10.)),
+            new_node(Tile.Empty, (30., -10.)),
+            new_node(Tile.Empty, (20., -20.)),
+
+            new_node(Tile.Empty, (10., -30.)),
+            new_node(Tile.Empty, (20., -40.)),
+            new_node(Tile.Base Faction.Cloudberry, (30., -30.)),
+            new_node(Tile.Empty, (40., -20.)),
+            new_node(Tile.Empty, (40., 0.)),
+
+            new_node(Tile.Empty, (40., 20.)),
+
+        ],
+        edges: [
+            (0, 34),
+            (1, 2),
+            (2, 3),
+            (2, 4),
+            (2, 6),
+
+            (2, 7),
+            (3, 5),
+            (3, 6),
+            (4, 7),
+            (4, 8),
+
+            (5, 10),
+            (5, 11),
+            (5, 6),
+            (6, 7),
+            (6, 12),
+
+            (7, 8),
+            (7, 13),
+            (8, 9),
+            (8, 14),
+            (9, 14),
+
+            (9, 15),
+            (10, 18),
+            (10, 11),
+            (11, 12),
+            (11, 18),
+
+            (11, 19),
+            (12, 20),
+            (12, 21),
+            (12, 22),
+            (12, 13),
+
+            (13, 22),
+            (13, 24),
+            (13, 29),
+            (13, 14),
+            (14, 30),
+
+            (14, 15),
+            (15, 16),
+            (15, 30),
+            (15, 31),
+            (17, 18),
+
+            (18, 25),
+            (18, 19),
+            (19, 25),
+            (19, 26),
+            (19, 20),
+
+            (20, 21),
+            (20, 23),
+            (20, 29),
+            (20, 27),
+            (21, 22),
+
+            (21, 23),
+            (22, 24),
+            (23, 24),
+            (24, 29),
+            (23, 29),
+            (25, 26),
+
+            (26, 35),
+            (26, 27),
+            (27, 35),
+            (27, 34),
+            (27, 28),
+
+            (28, 34),
+            (28, 33),
+            (28, 32),
+            (28, 29),
+            (29, 30),
+
+            (30, 31),
+            (30, 32),
+            (31, 32),
+            (32, 33),
+            (33, 34),
+
+            (34, 35),
+       ],
+    }
+end
+

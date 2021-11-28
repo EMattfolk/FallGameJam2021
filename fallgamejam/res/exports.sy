@@ -35,6 +35,7 @@ loadResources :: fn do
     sound["created"] = sfx.newSound("res/created.wav", false, SoundType.Static)
     sound["death"] = sfx.newSound("res/death.wav", false, SoundType.Static)
     sound["explosion"] = sfx.newSound("res/explosion.wav", false, SoundType.Static)
+    sound["theme"] = sfx.newSound("res/dropu-des.wav", false, SoundType.Stream)
 
     font["menu"] = love.graphics.newFont("res/Enchanted Land.otf", 100)
 
