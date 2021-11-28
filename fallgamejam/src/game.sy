@@ -55,6 +55,16 @@ get_guys_on_node :: fn state, node ->
     guys_on_node
 end
 
+count_guys_of_faction :: fn state ->
+    ret fn node, faction ->
+        gs :: get_guys_on_node' state, node
+        gs :: gs -> filter' fn o ->
+            guy.faction_to_int(o.faction) == guy.faction_to_int(faction)
+        end
+        len' gs
+    end
+end
+
 kill_guy :: fn state, g do
     f :: guy.faction_to_int(g.faction)
     state.guys_to_move[f] = state.guys_to_move[f] -> filter' fn o -> do o != g end
@@ -64,7 +74,11 @@ end
 move_active_guy :: fn state, dir do
     g :: state -> guy_to_move'
     old :: g.node
-    new :: graph.facingNeighbour' old, dir, state.graph
+    new :: graph.facingNeighbour' old, count_guys_of_faction(state), g.faction, dir, state.graph
+    if new == -1 do
+        state.moves_left = 0
+        ret
+    end
 
     guys_on_new_node :: get_guys_on_node' state, new
 
@@ -465,8 +479,10 @@ init :: fn do
                     case state.inputState do
                         MoveGuyDirection dir do
                             g :: state -> guy_to_move'
-                            facing :: graph.facingNeighbour' g.node, dir, state.graph
-                            guy.drawGuyDirection' g, facing, state.graph
+                            facing :: graph.facingNeighbour' g.node, count_guys_of_faction(state), g.faction, dir, state.graph
+                            if facing != -1 do
+                                guy.drawGuyDirection' g, facing, state.graph
+                            end
                         end
                         else do end
                     end
