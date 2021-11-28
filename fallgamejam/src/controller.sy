@@ -32,7 +32,7 @@ initControllers :: fn numControllers: int do
     end
 
     love.gamepadaxis = fn joystick: l.LoveJoystick, axis, size do
-        controllerIndex := ((joystick.getID' joystick) - 1) / 2
+        controllerIndex := ((joystick.getID' joystick) - 1) * 2
         controllerIndex < len(playerControllers) <=> true
 
         // dont ask me why we update the y value on x input and vice versa
@@ -52,7 +52,7 @@ initControllers :: fn numControllers: int do
     end
 
     love.gamepadpressed = fn joystick: l.LoveJoystick, button do
-        controllerIndex := ((joystick.getID' joystick) - 1) / 2
+        controllerIndex := ((joystick.getID' joystick) - 1) * 2
         if button == "rightshoulder" do
             playerControllers[controllerIndex].move = true
         else if button == "a" do
