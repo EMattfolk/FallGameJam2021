@@ -663,6 +663,15 @@ init :: fn do
                                 end
                             else do end
                         end
+                    end
+                    MoveGuy do
+                        case key do
+                            Return do
+                                ctrl.playerControllers -> for_each' fn controller do
+                                    controller.finish = true
+                                end
+                            end else do end
+                        end
                     end else do end
                 end
             end
