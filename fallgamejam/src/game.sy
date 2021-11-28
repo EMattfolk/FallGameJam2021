@@ -147,8 +147,6 @@ move_active_guy :: fn state, dir do
             blue: col2start.blue,
             alpha: 0.0,
         }
-        print(col1start)
-        print(col1end)
         res.particle["death" + guy.factionSuffix(f1)].setDirection' dir1
         res.particle["death" + guy.factionSuffix(f1)].setColors' col1start, col1end
         res.particle["death" + guy.factionSuffix(f1)].emitAt' state.graph.nodes[new].position, 15
