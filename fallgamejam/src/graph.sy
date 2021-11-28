@@ -115,7 +115,7 @@ graphCenter :: fn graph: Graph ->
     n :: as_float' len' graph.nodes
     halfWidth :: gfx.screenSizef() * (0.5, 0.5)
     centerPosition = (centerPosition / (n, n)) - halfWidth
-    ret (-centerPosition[0] / 2.0, -centerPosition[1] / 2.0)
+    ret (-centerPosition[0], -centerPosition[1])
 end
 
 force_function :: fn distance ->
