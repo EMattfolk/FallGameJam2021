@@ -315,8 +315,14 @@ init :: fn do
 
     scene := States.MainMenu menu.createMenu([])
     scene = States.MainMenu menu.createMenu([
-        ("Start", fn do
+        ("2 Players", fn do
             scene = States.Game new_game' 2
+        end),
+        ("3 Players", fn do
+            scene = States.Game new_game' 3
+        end),
+        ("4 Players", fn do
+            scene = States.Game new_game' 4
         end),
         ("Exit", fn do
             love.event.quit' 0
@@ -430,10 +436,10 @@ init :: fn do
                 end
 
                 // Crests
-                B_OFFEST :: (200., 0.)
-                C_OFFSET :: (-200., 0.)
-                G_OFFSET :: (100., 200.)
-                S_OFFSET :: (-100., 200.)
+                B_OFFEST :: (300., 0.)
+                C_OFFSET :: (-300., 0.)
+                G_OFFSET :: (200., 300.)
+                S_OFFSET :: (-200., 300.)
                 SCALE :: (2.0, 2.0)
                 guy.crest_image(guy.Faction.Blueberry).drawCentered' MIDDLE + B_OFFEST, 0.0, SCALE
                 guy.crest_image(guy.Faction.Cloudberry).drawCentered' MIDDLE + C_OFFSET, 0.0, SCALE
