@@ -120,13 +120,18 @@ move_active_guy :: fn state, dir do
             state.inputState = InputState.MoveGuy
             state.moves_left = state.moves_left - 1
         end
+
+        res.sound["death"].playp' (0.5, 0.1), (1., 0.2)
     else if not friendly_map[0] do
         // Kill!
         kill_guy' state, guys_on_new_node[0]
         kill_guy' state, g
 
         next_turn' state
+
+        res.sound["explosion"].playp' (1., 0.), (1., 0.2)
     end
+
 end
 
 
@@ -166,6 +171,7 @@ next_turn :: fn state do
                         guys -> push' guy.new_guy(faction, i)
                     end
                 end
+                res.sound["created"].playp' (0.7, 0.1), (1.0, 0.1)
             end
 
             case state.graph.nodes[i].tile do
