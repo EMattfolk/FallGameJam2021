@@ -71,7 +71,7 @@ kill_guy :: fn state, g do
     state.guys[f] = state.guys[f] -> filter' fn o -> do o != g end
 end
 
-move_active_guy :: fn state, dir do
+move_active_guy :: fn state, dir, showVictory do
     g :: state -> guy_to_move'
     old :: g.node
     new :: graph.facingNeighbour' old, count_guys_of_faction(state), g.faction, dir, state.graph
@@ -115,7 +115,7 @@ move_active_guy :: fn state, dir do
 
 
         if state.moves_left == 0 do
-            next_turn' state
+            next_turn' state, showVictory
         else do
             state.inputState = InputState.MoveGuy
             state.moves_left = state.moves_left - 1
@@ -127,15 +127,41 @@ move_active_guy :: fn state, dir do
         kill_guy' state, guys_on_new_node[0]
         kill_guy' state, g
 
-        next_turn' state
+        next_turn' state, showVictory
+
+        f1 :: g.faction
+        f2 :: guys_on_new_node[0].faction
+        dir1 :: angle' state.graph.nodes[new].position - state.graph.nodes[old].position
+        dir2 :: angle' state.graph.nodes[old].position - state.graph.nodes[new].position
+        col1start :: graph.factionColor(f1)
+        col1end :: gfx.Color {
+            red: col1start.red,
+            green: col1start.green,
+            blue: col1start.blue,
+            alpha: 0.0,
+        }
+        col2start :: graph.factionColor(f2)
+        col2end :: gfx.Color {
+            red: col2start.red,
+            green: col2start.green,
+            blue: col2start.blue,
+            alpha: 0.0,
+        }
+        res.particle["death" + guy.factionSuffix(f1)].setDirection' dir1
+        res.particle["death" + guy.factionSuffix(f1)].setColors' col1start, col1end
+        res.particle["death" + guy.factionSuffix(f1)].emitAt' state.graph.nodes[new].position, 15
+        res.particle["death" + guy.factionSuffix(f2)].setDirection' dir2
+        res.particle["death" + guy.factionSuffix(f2)].setColors' col2start, col2end
+        res.particle["death" + guy.factionSuffix(f2)].emitAt' state.graph.nodes[new].position, 15
 
         res.sound["explosion"].playp' (1., 0.), (1., 0.2)
     end
 
 end
 
+MAX_FESTS :: 3
 
-next_turn :: fn state do
+next_turn :: fn state, showVictory: fn * -> void do
     faction_i :: guy.faction_to_int' state.player_turn
     state.guys_to_move[faction_i] -> pop'
 
@@ -153,13 +179,70 @@ next_turn :: fn state do
 
     guys :: state.guys[fi]
 
-    end_of_turn :: len(to_move) == 0 and fi == 0
-    if end_of_turn do
-        state.turn += 1
-    end
-
-    if end_of_turn and rem(state.turn, 4) == 0 do
+    state.turns_until_score -= 1
+    if state.turns_until_score == 0 do
         state.score += graph.scoreGraph' state.graph
+        state.score_timer = 1.0
+
+        state.turns_until_score = love.math.random(4, 10) * len(state.factions)
+
+        if state.num_fests >= MAX_FESTS do
+            detect_winner_by_score :: fn score ->
+                scores :: [score[0], score[1], score[2], score[3]]
+
+                max_score := 0
+                winner := Maybe.Nothing
+                range(len(state.factions)) -> for_each' fn i do
+                    if scores[i] > max_score do
+                        max_score = scores[i]
+                        winner = Maybe.Just state.factions[i]
+                    else if scores[i] == max_score do
+                        winner = Maybe.Nothing
+                    end
+                end
+
+                winner
+            end
+
+            detect_winner_by_guys :: fn ->
+                max_guys := 0
+                winner := Maybe.Nothing
+                state.factions -> for_each' fn faction do
+                    fi :: faction_to_int' faction
+                    g :: len(state.guys[fi])
+                    if g > max_guys do
+                        max_guys = g
+                        winner = Maybe.Just faction
+                    else if g == max_guys do
+                        winner = Maybe.Nothing
+                    end
+                end
+
+                winner
+            end
+
+            winner := detect_winner_by_score' state.score
+            case winner do
+                Just winner do
+                    showVictory' winner
+                    ret
+                end
+                else do end
+            end
+
+            winner = detect_winner_by_guys'
+            case winner do
+                Just winner do
+                    showVictory' winner
+                    ret
+                end
+                else do end
+            end
+
+            showVictory' state.factions[0]
+        else do
+            state.num_fests += 1
+        end
     end
 
     if len(to_move) == 0 do
@@ -212,6 +295,7 @@ end
 States :: enum
     MainMenu menu.Menu,
     Game GameState,
+    Victory guy.Faction,
 end
 
 InputState :: enum
@@ -224,7 +308,9 @@ GameState :: blob {
     guys: {int: [guy.Guy]},
     guys_to_move: {int: [guy.Guy]},
     score: (int, int, int, int),
-    turn: int,
+    score_timer: float,
+    turns_until_score: int,
+    num_fests: int,
     factions: [guy.Faction],
     player_turn: guy.Faction,
     moves_left: int,
@@ -283,7 +369,16 @@ new_game :: fn num_players ->
         factions -> push' guy.int_to_faction' i
     end
 
-    graph :: graph.createFourPlayerGraph()
+    gg := graph.createThreePlayerGraph()
+
+    if num_players == 2 do
+        gg = graph.createTwoPlayer'
+    else if num_players == 3 do
+        gg = graph.createThreePlayerGraph'
+    else if num_players == 4 do
+        gg = graph.createFourPlayerGraph()
+    end
+    graph :: gg
 
     guys :: {:}
     guys_to_move :: {:}
@@ -315,8 +410,10 @@ new_game :: fn num_players ->
         guys_to_move: guys_to_move,
         factions: factions,
         player_turn: guy.Faction.Blueberry,
+        score_timer: 0.,
         score: (0, 0, 0, 0),
-        turn: 1,
+        turns_until_score: 2 * len(factions),
+        num_fests: 0,
         moves_left: 1,
         inputState: InputState.MoveGuy,
     }
@@ -345,27 +442,41 @@ init :: fn do
     defaultFont :: gfx.createFont(love.graphics.getFont())
     mainMenuFont :: gfx.createFont(res.font["menu"])
 
+    res.sound["theme"].setLooping(true)
+    res.sound["theme"].play()
+
     scene := States.MainMenu menu.createMenu([])
-    scene = States.MainMenu menu.createMenu([
-        ("2 Players", fn do
-            scene = States.Game new_game' 2
-        end),
-        ("3 Players", fn do
-            scene = States.Game new_game' 3
-        end),
-        ("4 Players", fn do
-            scene = States.Game new_game' 4
-        end),
-        ("Exit", fn do
-            love.event.quit' 0
-        end)
-    ])
+
+    showMenu :: fn do
+        scene = States.MainMenu menu.createMenu([
+            ("2 Players", fn do
+                scene = States.Game new_game' 2
+            end),
+            ("3 Players", fn do
+                scene = States.Game new_game' 3
+            end),
+            ("4 Players", fn do
+                scene = States.Game new_game' 4
+            end),
+            ("Exit", fn do
+                love.event.quit' 0
+            end)
+        ])
+    end
+
+    showVictory :: fn fac do
+        scene = States.Victory fac
+    end
+
+    showMenu'
 
     update :: fn delta do
         case scene do
             MainMenu _ do
             end
             Game state do
+                state.score_timer -= delta
+                state.score_timer = max' state.score_timer, 0.
                 graph.updateGraph' state.graph, delta
                 graph.scoreGraph' state.graph
 
@@ -394,7 +505,7 @@ init :: fn do
 
                         pi := playerIndex' state
                         if ctrl.playerControllers[pi].finish do
-                            next_turn' state
+                            next_turn(state, showVictory)
                         end
                     end
 
@@ -415,11 +526,11 @@ init :: fn do
                         // Move guy
                         pi := playerIndex' state
                         if ctrl.playerControllers[pi].move do
-                            move_active_guy' state, new_dir
+                            move_active_guy' state, new_dir, showVictory
                         end
 
                         if ctrl.playerControllers[pi].finish do
-                            next_turn' state
+                            next_turn' state, showVictory
                         end
                     end
 
@@ -427,13 +538,38 @@ init :: fn do
                 end
 
             end
+
+            Victory do
+            end
+
             else do <!> end
         end
 
         ctrl.postTick'
+
+        res.particle["death_b"].update(delta)
+        res.particle["death_c"].update(delta)
+        res.particle["death_g"].update(delta)
+        res.particle["death_s"].update(delta)
     end
 
     voronoiShader :: love.graphics.newShader("res/voronoi.glsl")
+
+    drawControllers :: fn do
+        SIZE :: gfx.screenSizef'
+        TEXT_COLOR :: gfx.rgb' 1., 1., 1.
+        TEXT_SCALE :: .5
+
+        mainMenuFont.drawTextFT(
+            TEXT_COLOR,
+            "rb  move\na  finish",
+            SIZE - (140., 120.),
+            gfx.Alignment.Right,
+            250.,
+            0.0,
+            TEXT_SCALE
+        )
+    end
 
     draw :: fn do
         drawVoronoiBackground :: fn vertices: [(*, *, *)] do
@@ -497,7 +633,58 @@ init :: fn do
                 guy.crest_image(guy.Faction.Strawberry).drawCentered' MIDDLE + S_OFFSET, 0.0, SCALE
             end
 
+            Victory fac do
+                MIDDLE :: gfx.screenSizef() / (2., 2.)
+                TEXT_SCALE :: 1.
+
+                TEXT_COLOR :: gfx.rgb' 1., 1., 1.
+                mainMenuFont.drawTextFT(
+                    TEXT_COLOR,
+                    "Victory",
+                    MIDDLE + (-300., -200.),
+                    gfx.Alignment.Center,
+                    600.0,
+                    0.0,
+                    TEXT_SCALE
+                )
+
+                CREST_OFFSET :: (0., 100.)
+                SCALE :: (2., 2.)
+                guy.crest_image(fac).drawCentered' MIDDLE + CREST_OFFSET, 0.0, SCALE
+            end
+
             Game state do
+                i := 0
+                state.factions -> for_each' fn fac do
+                    score := 0
+                    case fac do
+                        Blueberry do score = state.score[0] end
+                        Cloudberry do score = state.score[1] end
+                        Gooseberry do score = state.score[2] end
+                        Strawberry do score = state.score[3] end
+                        else do end
+                    end
+
+                    guy.crest_image(fac).draw' (100.0 + as_float(i) * 100.0, 50.0), 0., (1., 1.)
+
+                    t :: state.score_timer
+                    s :: 1. + t * t * 0.5
+                    mainMenuFont.drawTextT' WHITE, as_str(score), (150.0 + as_float(i) * 100.0, 50.0), 0., s
+                    i += 1
+                end
+
+                if state.turns_until_score <= 4 do
+                    prefix := ""
+                    if state.num_fests < MAX_FESTS do
+                        prefix = "Score in "
+                    else do
+                        prefix = "Final score in "
+                    end
+                    s :: prefix + as_str(state.turns_until_score) + " turns"
+                    height :: love.graphics.getHeight'
+                    mainMenuFont.drawText' WHITE, s, (100.0, as_float(height) - 100.0)
+                end
+
                 offset :: graph.graphCenter' state.graph
 
                 state.graph.nodes -> map(fn node ->
@@ -508,9 +695,11 @@ init :: fn do
                     )
                 end) -> drawVoronoiBackground'
 
+                drawControllers'
+
                 love.graphics.translate' offset[0], offset[1]
                 do
-                    graph.drawGraph' state.graph
+                    graph.drawGraph' state.graph, state
 
                     state.factions -> for_each' fn f do
                         guys :: state.guys[guy.faction_to_int(f)]
@@ -530,10 +719,13 @@ init :: fn do
                         else do end
                     end
                 end
-                love.graphics.origin'
 
-                s :: as_str' state.score
-                mainMenuFont.drawText' WHITE, s, (100.0, 50.0)
+                res.particle["death_b"].draw(gfx.rgb' 1.0, 1.0, 1.0)
+                res.particle["death_c"].draw(gfx.rgb' 1.0, 1.0, 1.0)
+                res.particle["death_g"].draw(gfx.rgb' 1.0, 1.0, 1.0)
+                res.particle["death_s"].draw(gfx.rgb' 1.0, 1.0, 1.0)
+
+                love.graphics.origin'
             end
 
             else do <!> end
@@ -584,8 +776,20 @@ init :: fn do
                                 end
                             else do end
                         end
+                    end
+                    MoveGuy do
+                        case key do
+                            Return do
+                                ctrl.playerControllers -> for_each' fn controller do
+                                    controller.finish = true
+                                end
+                            end else do end
+                        end
                     end else do end
                 end
+            end
+            Victory do
+                showMenu'
             end else do <!> end
         end
     end
@@ -611,7 +815,6 @@ inputDirection :: fn state -> Maybe do // Maybe (float, float)
     if res == (0., 0.,) do
         ret Maybe.Just ctrl.playerControllers[playerIndex(state)].joystick
     end
-
 
     ret Maybe.Just (normalize' res)
 end

@@ -7,11 +7,19 @@
 
 ParticleSystem :: blob {
     // TODO(ed): Cycles here - since we take ourselves sas the first argument.
+    emit: fn *, int -> void,
     setParticleLifetime: fn *, float, float -> void,
     setEmissionRate: fn *, int -> void,
     setLinearAcceleration: fn *, float, float, float, float -> void,
+    setLinearDamping: fn *, float, float -> void,
 
     setPosition: fn *, float, float -> void,
+    setDirection: fn *, float -> void,
+    setSizes: fn *, float, float -> void,
+    setSpeed: fn *, float, float -> void,
+    setSpread: fn *, float -> void,
+
+    setColors: fn *, float, float, float, float, float, float, float, float -> void, // yikes
 
     update: fn *, float -> void,
 }

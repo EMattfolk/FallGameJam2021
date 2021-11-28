@@ -245,11 +245,20 @@ end
 
 Particles :: blob {
     particles: l.ParticleSystem,
+    emit: fn int -> void,
+    emitAt: fn (float, float), int -> void,
     setParticleLifetime: fn float, float -> void,
     setEmissionRate: fn int -> void,
     setLinearAcceleration: fn (float, float), (float, float) -> void,
+    setLinearDamping: fn float, float -> void,
     // set EmitterPosition
     setPosition: fn (float, float) -> void,
+    setDirection: fn float -> void,
+    setSizes: fn float, float -> void,
+    setSpeed: fn float, float -> void,
+    setSpread: fn float -> void,
+
+    setColors: fn Color, Color -> void,
 
     // NOTE(ed): There are a lot more settings to be added here,
     // so feel free to add them if you need them:
@@ -268,6 +277,13 @@ newParticles :: fn image: Image ->
     particles :: love.graphics.newParticleSystem' image.img, 1000
     Particles {
         particles: particles,
+        emit: fn amount: int do
+            particles.emit' particles, amount
+        end,
+        emitAt: fn pos, amount: int do
+            particles.setPosition' particles, pos[0], pos[1]
+            particles.emit' particles, amount
+        end,
         setParticleLifetime: fn lo, hi do
             particles.setParticleLifetime' particles, lo, hi
         end,
@@ -277,10 +293,27 @@ newParticles :: fn image: Image ->
         setLinearAcceleration: fn lo, hi do
             particles.setLinearAcceleration' particles, lo[0], lo[1], hi[0], hi[1]
         end,
+        setLinearDamping: fn lo, hi do
+            particles.setLinearDamping' particles, lo, hi
+        end,
         setPosition: fn pos do
             particles.setPosition' particles, pos[0], pos[1]
         end,
-
+        setDirection: fn dir do
+            particles.setDirection' particles, dir
+        end,
+        setSizes: fn lo, hi do
+            particles.setSizes' particles, lo, hi
+        end,
+        setSpeed: fn lo, hi do
+            particles.setSpeed' particles, lo, hi
+        end,
+        setSpread: fn rad do
+            particles.setSpread' particles, rad
+        end,
+        setColors: fn col1, col2 do
+            particles.setColors' particles, col1.red, col1.green, col1.blue, col1.alpha, col2.red, col2.green, col2.blue, col2.alpha
+        end,
         update: fn delta do
             particles.update' particles, delta
         end,
