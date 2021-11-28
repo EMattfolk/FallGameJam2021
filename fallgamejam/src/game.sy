@@ -41,6 +41,136 @@ guy_to_move :: fn state ->
     ret state.guys_to_move[guy.faction_to_int(state.player_turn)] -> last'
 end
 
+move_active_guy :: fn state, dir do
+    g :: state -> guy_to_move'
+    old :: g.node
+    new :: graph.facingNeighbour' old, dir, state.graph
+    g.node = new
+
+    diff :: state.graph.nodes[old].position - state.graph.nodes[new].position
+    f :: 25.0
+    state.graph.nodes[new].velocity -= diff * (f, f)
+
+    kill := false
+    ff :: guy.faction_to_int(g.faction)
+
+    state.factions -> for_each' fn other_fn do
+        if g.faction == other_fn ret
+
+        // friendly faction
+        ef := guy.faction_to_int(other_fn)
+
+        kill = false
+        state.guys[ef] = state.guys[ef] -> filter' fn other_guy -> do
+            if other_guy.node == g.node and not kill do
+                kill = true
+                state.guys_to_move[ef] = state.guys_to_move[ef] -> filter' fn other_other_guy -> do
+                    other_other_guy != other_guy
+                end
+                ret false
+            else do
+                ret true
+            end
+        end
+
+        if kill do
+            print' g
+            state.guys[ff] = state.guys[ff] -> filter' fn friendly_guy -> do
+                friendly_guy != g
+            end
+        end
+    end
+
+    node :: state.graph.nodes[g.node]
+
+    f :: g.faction
+
+    if not kill do
+        node.tile = (fn ->
+            case node.tile do
+                Captured _ ret graph.Tile.Captured f
+                Empty ret graph.Tile.Captured f
+                Factory _ ret graph.Tile.Factory f
+                EmptyFactory ret graph.Tile.Factory f
+                Base f ret graph.Tile.Base f
+                else do
+                    print' "Remember to add new tile!"
+                    <!>
+                end
+            end
+            ret graph.Tile.Empty
+        end)()
+    end
+
+    if not kill and state.moves_left > 0 do
+        case state.inputState do
+            MoveGuyDirection _ do
+                state.inputState = InputState.MoveGuy
+            end
+            else do <!> end
+        end
+
+        state.moves_left = state.moves_left - 1
+    else do
+        next_turn' state
+    end
+end
+
+
+next_turn :: fn state do
+    faction_i :: guy.faction_to_int' state.player_turn
+    state.guys_to_move[faction_i] -> pop'
+
+    num_factions :: len' state.factions
+    next_faction_i :: faction_i + 1
+    i :: rem' next_faction_i, num_factions
+
+    state.player_turn = state.factions[i]
+    state.moves_left = 1
+    state.inputState = InputState.MoveGuy
+
+    fi :: guy.faction_to_int' state.player_turn
+
+    to_move :: state.guys_to_move[fi]
+
+    guys :: state.guys[fi]
+
+    end_of_turn :: len(to_move) == 0 and fi == 0
+    if end_of_turn do
+        state.turn += 1
+    end
+
+    if end_of_turn and rem(state.turn, 4) == 0 do
+        state.score += graph.scoreGraph' state.graph
+    end
+
+    if len(to_move) == 0 do
+        i := 0
+        loop i < len(state.graph.nodes) do
+            spawn :: fn faction do
+                if faction == state.player_turn do
+                    guys -> push' guy.new_guy(faction, i)
+                end
+            end
+
+            case state.graph.nodes[i].tile do
+                Base faction do
+                    spawn' faction
+                end
+                Factory faction do
+                    spawn' faction
+                end
+                else do end
+            end
+            i = i + 1
+        end
+
+        state.guys_to_move[fi] = guys -> clone'
+        shuffle' state.guys_to_move[fi]
+    end
+end
+
+
 makeFullscreen :: fn do
     w := l.WindowFlags {
         fullscreen: true,
@@ -315,66 +445,6 @@ init :: fn do
         end
     end
 
-    faction_start_round :: fn state do
-        fi :: guy.faction_to_int' state.player_turn
-
-        to_move :: state.guys_to_move[fi]
-
-        guys :: state.guys[fi]
-
-        end_of_turn :: len(to_move) == 0 and fi == 0
-        if end_of_turn do
-            state.turn += 1
-        end
-
-        if end_of_turn and rem(state.turn, 4) == 0 do
-            state.score += graph.scoreGraph' state.graph
-        end
-
-        if len(to_move) == 0 do
-            i := 0
-            loop i < len(state.graph.nodes) do
-                spawn :: fn faction do
-                    if faction == state.player_turn do
-                        guys -> push' guy.new_guy(faction, i)
-                    end
-                end
-
-                case state.graph.nodes[i].tile do
-                    Base faction do
-                        spawn' faction
-                    end
-                    Factory faction do
-                        spawn' faction
-                    end
-                    else do end
-                end
-                i = i + 1
-            end
-
-            state.guys_to_move[fi] = guys -> clone'
-            shuffle' state.guys_to_move[fi]
-        end
-    end
-
-    next_turn :: fn state do
-        faction_i :: guy.faction_to_int' state.player_turn
-        state.guys_to_move[faction_i] -> pop'
-
-        num_factions :: len' state.factions
-        next_faction_i :: faction_i + 1
-        i :: rem' next_faction_i, num_factions
-
-        state.player_turn = state.factions[i]
-        state.moves_left = 1
-        state.inputState = InputState.MoveGuy
-
-        state -> faction_start_round'
-    end
-
-    post_move :: fn state do
-    end
-
     love.keypressed = fn _key, scancode, repeat do
         key := input.strToKeyDict[_key]
         case key do
@@ -407,78 +477,7 @@ init :: fn do
                     MoveGuyDirection dir do
                         case key do
                             Space do
-                                g :: state -> guy_to_move'
-                                old :: g.node
-                                new :: graph.facingNeighbour' old, dir, state.graph
-                                g.node = new
-
-                                diff :: state.graph.nodes[old].position - state.graph.nodes[new].position
-                                f :: 25.0
-                                state.graph.nodes[new].velocity -= diff * (f, f)
-
-                                kill := false
-                                ff :: guy.faction_to_int(g.faction)
-
-                                state.factions -> for_each' fn other_fn do
-                                    if g.faction == other_fn ret
-
-                                    // friendly faction
-                                    ef := guy.faction_to_int(other_fn)
-
-                                    kill = false
-                                    state.guys[ef] = state.guys[ef] -> filter' fn other_guy -> do
-                                        if other_guy.node == g.node and not kill do
-                                            kill = true
-                                            state.guys_to_move[ef] = state.guys_to_move[ef] -> filter' fn other_other_guy -> do
-                                                other_other_guy != other_guy
-                                            end
-                                            ret false
-                                        else do
-                                            ret true
-                                        end
-                                    end
-
-                                    if kill do
-                                        print' g
-                                        state.guys[ff] = state.guys[ff] -> filter' fn friendly_guy -> do
-                                            friendly_guy != g
-                                        end
-                                    end
-                                end
-
-                                node :: state.graph.nodes[g.node]
-
-                                f :: g.faction
-
-                                if not kill do
-                                    node.tile = (fn ->
-                                        case node.tile do
-                                            Captured _ ret graph.Tile.Captured f
-                                            Empty ret graph.Tile.Captured f
-                                            Factory _ ret graph.Tile.Factory f
-                                            EmptyFactory ret graph.Tile.Factory f
-                                            Base f ret graph.Tile.Base f
-                                            else do
-                                                print' "Remember to add new tile!"
-                                                <!>
-                                            end
-                                        end
-                                        ret graph.Tile.Empty
-                                    end)()
-                                end
-
-                                if not kill and state.moves_left > 0 do
-                                    case state.inputState do
-                                        MoveGuyDirection _ do
-                                            state.inputState = InputState.MoveGuy
-                                        end
-                                        else do <!> end
-                                    end
-
-                                    state.moves_left = state.moves_left - 1
-                                else do
-                                    next_turn' state
-                                end
+                                move_active_guy' state, dir
                             else do end
                         end
                     end else do end
