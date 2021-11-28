@@ -1,5 +1,6 @@
 from /love use love
 use /gfx
+use /sfx
 use /res/
 use guy
 from guy use (Faction, faction_to_int)
@@ -171,9 +172,10 @@ Node :: blob {
 new_node :: fn tile, position ->
     width :: love.graphics.getWidth'
     height :: love.graphics.getHeight'
+    offset :: (sfx.random(-10., 10.), sfx.random(-10., 10.))
 
     Node {
-        position: position,
+        position: position + offset,
         velocity: (0., 0.),
         tile: tile,
     }
@@ -302,10 +304,10 @@ createGraph :: fn -> Graph do
     }
 end
 
-createGraphFactory :: fn -> Graph do
+createTwoPlayer :: fn -> Graph do
     Graph {
         nodes: [
-            new_node(Tile.EmptyFactory, (160., 200.)),
+            new_node(Tile.Empty, (160., 200.)),
             new_node(Tile.Empty, (240., 200.)),
             new_node(Tile.Empty, (320., 200.)),
             new_node(Tile.Empty, (400., 200.)),
@@ -314,14 +316,14 @@ createGraphFactory :: fn -> Graph do
             new_node(Tile.Empty, (640., 200.)),
 
             new_node(Tile.Base Faction.Blueberry, (160., 300.)),
-            new_node(Tile.Base Faction.Gooseberry, (240., 300.)),
+            new_node(Tile.Empty, (240., 300.)),
             new_node(Tile.Empty, (320., 300.)),
             new_node(Tile.Empty, (400., 300.)),
             new_node(Tile.Empty, (480., 300.)),
             new_node(Tile.Empty, (560., 300.)),
             new_node(Tile.Base Faction.Cloudberry, (640., 300.)),
 
-            new_node(Tile.Base Faction.Strawberry, (160., 400.)),
+            new_node(Tile.Empty, (160., 400.)),
             new_node(Tile.Empty, (240., 400.)),
             new_node(Tile.Empty, (320., 400.)),
             new_node(Tile.Empty, (400., 400.)),
@@ -329,7 +331,7 @@ createGraphFactory :: fn -> Graph do
             new_node(Tile.Empty, (560., 400.)),
             new_node(Tile.Empty, (640., 400.)),
 
-            new_node(Tile.Empty, (400., 500.)),
+            new_node(Tile.EmptyFactory, (400., 500.)),
         ],
         edges: [
             (0, 1),
@@ -370,3 +372,69 @@ createGraphFactory :: fn -> Graph do
         ],
     }
 end
+
+createThreePlayerGraph :: fn -> Graph do
+    Graph {
+        nodes: [
+           new_node(Tile.Base Faction.Blueberry, (0., 300.)),
+           new_node(Tile.Empty, (-300., 200.)),
+           new_node(Tile.EmptyFactory, (-200., 200.)),
+           new_node(Tile.Empty, (0., 200.)),
+           new_node(Tile.EmptyFactory, (200., 200.)),
+           new_node(Tile.Empty, (300., 200.)),
+           new_node(Tile.Empty, (-100., 100.)),
+
+           new_node(Tile.EmptyFactory, (0., 0.)),
+           new_node(Tile.Empty, (100., 100.)),
+           new_node(Tile.Empty, (-200., -100.)),
+           new_node(Tile.Empty, (0., -100.)),
+           new_node(Tile.Empty, (200., -100.)),
+           new_node(Tile.Base Faction.Strawberry, (-300., -200.)),
+           new_node(Tile.EmptyFactory, (0., -200.)),
+
+           new_node(Tile.Base Faction.Cloudberry, (300., -200.)),
+           new_node(Tile.Empty, (0., -300.)),
+        ],
+        edges: [
+            (0, 2),
+            (0, 3),
+            (0, 4),
+            (1, 2),
+            (2, 3),
+            (2, 6),
+            (2, 9),
+
+            (2, 12),
+            (3, 6),
+            (3, 8),
+            (3, 4),
+            (3, 7),
+            (4, 11),
+            (4, 5),
+            (4, 8),
+
+            (4, 14),
+            (6, 9),
+            (6, 7),
+            (7, 8),
+            (7, 9),
+            (7, 10),
+            (7, 11),
+            (8, 11),
+            (9, 10),
+
+            (9, 12),
+            (9, 13),
+            (10, 11),
+            (10, 13),
+            (11, 13),
+            (11, 14),
+            (12, 13),
+
+            (13, 15),
+            (13, 14),
+       ],
+    }
+end
+
+
