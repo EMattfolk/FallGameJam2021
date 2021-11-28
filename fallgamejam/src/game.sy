@@ -654,37 +654,6 @@ init :: fn do
             end
 
             Game state do
-                i := 0
-                state.factions -> for_each' fn fac do
-                    score := 0
-                    case fac do
-                        Blueberry do score = state.score[0] end
-                        Cloudberry do score = state.score[1] end
-                        Gooseberry do score = state.score[2] end
-                        Strawberry do score = state.score[3] end
-                        else do end
-                    end
-
-                    guy.crest_image(fac).draw' (100.0 + as_float(i) * 100.0, 50.0), 0., (1., 1.)
-
-                    t :: state.score_timer
-                    s :: 1. + t * t * 0.5
-                    mainMenuFont.drawTextT' WHITE, as_str(score), (150.0 + as_float(i) * 100.0, 50.0), 0., s
-                    i += 1
-                end
-
-                if state.turns_until_score <= 4 do
-                    prefix := ""
-                    if state.num_fests < MAX_FESTS do
-                        prefix = "Score in "
-                    else do
-                        prefix = "Final score in "
-                    end
-                    s :: prefix + as_str(state.turns_until_score) + " turns"
-                    height :: love.graphics.getHeight'
-                    mainMenuFont.drawText' WHITE, s, (100.0, as_float(height) - 100.0)
-                end
-
                 offset :: graph.graphCenter' state.graph
 
                 state.graph.nodes -> map(fn node ->
@@ -726,6 +695,37 @@ init :: fn do
                 res.particle["death_s"].draw(gfx.rgb' 1.0, 1.0, 1.0)
 
                 love.graphics.origin'
+
+                i := 0
+                state.factions -> for_each' fn fac do
+                    score := 0
+                    case fac do
+                        Blueberry do score = state.score[0] end
+                        Cloudberry do score = state.score[1] end
+                        Gooseberry do score = state.score[2] end
+                        Strawberry do score = state.score[3] end
+                        else do end
+                    end
+
+                    guy.crest_image(fac).draw' (100.0 + as_float(i) * 100.0, 50.0), 0., (1., 1.)
+
+                    t :: state.score_timer
+                    s :: 1. + t * t * 0.5
+                    mainMenuFont.drawTextT' WHITE, as_str(score), (150.0 + as_float(i) * 100.0, 50.0), 0., s
+                    i += 1
+                end
+
+                if state.turns_until_score <= 4 do
+                    prefix := ""
+                    if state.num_fests < MAX_FESTS do
+                        prefix = "Score in "
+                    else do
+                        prefix = "Final score in "
+                    end
+                    s :: prefix + as_str(state.turns_until_score) + " turns"
+                    height :: love.graphics.getHeight'
+                    mainMenuFont.drawText' WHITE, s, (100.0, as_float(height) - 100.0)
+                end
             end
 
             else do <!> end
