@@ -422,7 +422,7 @@ createThreePlayerGraph :: fn -> Graph do
            new_node(Tile.Empty, (-200., -100.)),
            new_node(Tile.Empty, (0., -100.)),
            new_node(Tile.Empty, (200., -100.)),
-           new_node(Tile.Base Faction.Strawberry, (-300., -200.)),
+           new_node(Tile.Base Faction.Gooseberry, (-300., -200.)),
            new_node_pin(Tile.EmptyFactory, (0. * s, -200. * s)),
 
            new_node(Tile.Base Faction.Cloudberry, (300., -200.)),
