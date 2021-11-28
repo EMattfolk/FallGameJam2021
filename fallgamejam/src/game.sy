@@ -266,7 +266,7 @@ init :: fn do
                 guy.new_guy(guy.Faction.Cloudberry, 13),
             ]
             state :: GameState {
-                graph: graph.createGraph(),
+                graph: graph.createGraphFactory(),
                 guys: {
                     guy.faction_to_int(guy.Faction.Blueberry): blue_guys,
                     guy.faction_to_int(guy.Faction.Cloudberry): cloud_guys,
