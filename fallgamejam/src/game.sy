@@ -317,7 +317,9 @@ init :: fn do
                         may_dir := inputDirection'
                         case may_dir do
                             Just dir do
-                                state.inputState = InputState.MoveGuyDirection dir
+                                if magnitude(dir) > 0.2 do
+                                    state.inputState = InputState.MoveGuyDirection dir
+                                end
                             end
                             else do end
                         end
@@ -327,7 +329,9 @@ init :: fn do
                         may_dir := inputDirection'
                         case may_dir do
                             Just dir do
-                                state.inputState = InputState.MoveGuyDirection dir
+                                if magnitude(dir) > 0.2 do
+                                    state.inputState = InputState.MoveGuyDirection dir
+                                end
                             end
                             else do end
                         end
