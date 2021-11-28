@@ -35,7 +35,7 @@ tileColor :: fn tile ->
         Base faction ret factionColor(faction)
         Captured faction ret factionColor(faction)
         Empty ret gfx.rgb' 0.5, 0.5, 0.5
-        EmptyFactory ret gfx.rgb' 0.2, 0.2, 0.2
+        EmptyFactory ret gfx.rgb' 0.9, 0.9, 0.9
         Factory faction ret factionColor(faction)
         else do <!> end
     end
@@ -59,6 +59,7 @@ drawNode :: fn node: Node do
         Factory faction do
             c :: tileColor(node.tile)
             gfx.drawCircle' c, node.position, NODE_SIZE
+            res.img["tile_fact"].drawCentered' node.position, 0.0, (.5, .5)
         end
         Empty do
             c :: tileColor(node.tile)
@@ -67,6 +68,7 @@ drawNode :: fn node: Node do
         EmptyFactory do
             c :: tileColor(node.tile)
             gfx.drawCircle' c, node.position, NODE_SIZE
+            res.img["tile_fact"].drawCentered' node.position, 0.0, (.5, .5)
         end
         else do <!> end
     end
@@ -223,6 +225,75 @@ createGraph :: fn -> Graph do
     Graph {
         nodes: [
             new_node(Tile.Empty, (160., 200.)),
+            new_node(Tile.Empty, (240., 200.)),
+            new_node(Tile.Empty, (320., 200.)),
+            new_node(Tile.Empty, (400., 200.)),
+            new_node(Tile.Empty, (480., 200.)),
+            new_node(Tile.Empty, (560., 200.)),
+            new_node(Tile.Empty, (640., 200.)),
+
+            new_node(Tile.Base Faction.Blueberry, (160., 300.)),
+            new_node(Tile.Base Faction.Gooseberry, (240., 300.)),
+            new_node(Tile.Empty, (320., 300.)),
+            new_node(Tile.Empty, (400., 300.)),
+            new_node(Tile.Empty, (480., 300.)),
+            new_node(Tile.Empty, (560., 300.)),
+            new_node(Tile.Base Faction.Cloudberry, (640., 300.)),
+
+            new_node(Tile.Base Faction.Strawberry, (160., 400.)),
+            new_node(Tile.Empty, (240., 400.)),
+            new_node(Tile.Empty, (320., 400.)),
+            new_node(Tile.Empty, (400., 400.)),
+            new_node(Tile.Empty, (480., 400.)),
+            new_node(Tile.Empty, (560., 400.)),
+            new_node(Tile.Empty, (640., 400.)),
+
+            new_node(Tile.Empty, (400., 500.)),
+        ],
+        edges: [
+            (0, 1),
+            (1, 2),
+            (2, 3),
+            (3, 4),
+            (4, 5),
+            (5, 6),
+
+            (0, 7),
+            (1, 9),
+            (3, 10),
+            (5, 11),
+            (6, 13),
+
+            (7, 8),
+            (8, 9),
+            (9, 10),
+            (10, 11),
+            (11, 12),
+            (12, 13),
+
+            (7, 14),
+            (8, 15),
+            (10, 17),
+            (12, 19),
+            (13, 20),
+
+            (14, 15),
+            (15, 16),
+            (16, 17),
+            (17, 18),
+            (18, 19),
+            (19, 20),
+
+            (16, 21),
+            (18, 21),
+        ],
+    }
+end
+
+createGraphFactory :: fn -> Graph do
+    Graph {
+        nodes: [
+            new_node(Tile.EmptyFactory, (160., 200.)),
             new_node(Tile.Empty, (240., 200.)),
             new_node(Tile.Empty, (320., 200.)),
             new_node(Tile.Empty, (400., 200.)),
