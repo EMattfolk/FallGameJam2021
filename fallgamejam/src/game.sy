@@ -129,6 +129,31 @@ move_active_guy :: fn state, dir, showVictory do
 
         next_turn' state, showVictory
 
+        f1 :: g.faction
+        f2 :: guys_on_new_node[0].faction
+        dir1 :: angle' state.graph.nodes[new].position - state.graph.nodes[old].position
+        dir2 :: angle' state.graph.nodes[old].position - state.graph.nodes[new].position
+        col1start :: graph.factionColor(f1)
+        col1end :: gfx.Color {
+            red: col1start.red,
+            green: col1start.green,
+            blue: col1start.blue,
+            alpha: 0.0,
+        }
+        col2start :: graph.factionColor(f2)
+        col2end :: gfx.Color {
+            red: col2start.red,
+            green: col2start.green,
+            blue: col2start.blue,
+            alpha: 0.0,
+        }
+        res.particle["death" + guy.factionSuffix(f1)].setDirection' dir1
+        res.particle["death" + guy.factionSuffix(f1)].setColors' col1start, col1end
+        res.particle["death" + guy.factionSuffix(f1)].emitAt' state.graph.nodes[new].position, 15
+        res.particle["death" + guy.factionSuffix(f2)].setDirection' dir2
+        res.particle["death" + guy.factionSuffix(f2)].setColors' col2start, col2end
+        res.particle["death" + guy.factionSuffix(f2)].emitAt' state.graph.nodes[new].position, 15
+
         res.sound["explosion"].playp' (1., 0.), (1., 0.2)
     end
 
@@ -341,7 +366,17 @@ new_game :: fn num_players ->
         factions -> push' guy.int_to_faction' i
     end
 
-    graph :: graph.createGraph()
+
+    gg := graph.createThreePlayerGraph()
+
+    if num_players == 2 do
+        gg = graph.createTwoPlayer'
+    else if num_players == 3 do
+        gg = graph.createThreePlayerGraph'
+    else if num_players == 4 do
+        <!>
+    end
+    graph :: gg
 
     guys :: {:}
     guys_to_move :: {:}
@@ -503,6 +538,11 @@ init :: fn do
         end
 
         ctrl.postTick'
+
+        res.particle["death_b"].update(delta)
+        res.particle["death_c"].update(delta)
+        res.particle["death_g"].update(delta)
+        res.particle["death_s"].update(delta)
     end
 
     voronoiShader :: love.graphics.newShader("res/voronoi.glsl")
@@ -590,6 +630,26 @@ init :: fn do
             end
 
             Game state do
+                love.graphics.origin'
+
+                s :: as_str' state.score
+                mainMenuFont.drawText' WHITE, s, (100.0, 50.0)
+
+                s :: as_str' state.score
+                mainMenuFont.drawText' WHITE, s, (100.0, 50.0)
+
+                if state.turns_until_score <= 4 do
+                    prefix := ""
+                    if state.num_fests < MAX_FESTS do
+                        prefix = "Score in "
+                    else do
+                        prefix = "Final score in "
+                    end
+                    s :: prefix + as_str(state.turns_until_score) + " turns"
+                    height :: love.graphics.getHeight'
+                    mainMenuFont.drawText' WHITE, s, (100.0, as_float(height) - 100.0)
+                end
+
                 offset :: graph.graphCenter' state.graph
 
                 state.graph.nodes -> map(fn node ->
@@ -599,7 +659,6 @@ init :: fn do
                         graph.shaderColor(node)
                     )
                 end) -> drawVoronoiBackground'
-
                 love.graphics.translate' offset[0], offset[1]
                 do
                     graph.drawGraph' state.graph, state
@@ -622,26 +681,15 @@ init :: fn do
                         else do end
                     end
                 end
-                love.graphics.origin'
-
-                s :: as_str' state.score
-                mainMenuFont.drawText' WHITE, s, (100.0, 50.0)
-
-                if state.turns_until_score <= 4 do
-                    prefix := ""
-                    if state.num_fests < MAX_FESTS do
-                        prefix = "Score in "
-                    else do
-                        prefix = "Final score in "
-                    end
-                    s :: prefix + as_str(state.turns_until_score) + " turns"
-                    height :: love.graphics.getHeight'
-                    mainMenuFont.drawText' WHITE, s, (100.0, as_float(height) - 100.0)
-                end
             end
 
             else do <!> end
         end
+
+        res.particle["death_b"].draw(gfx.rgb' 1.0, 1.0, 1.0)
+        res.particle["death_c"].draw(gfx.rgb' 1.0, 1.0, 1.0)
+        res.particle["death_g"].draw(gfx.rgb' 1.0, 1.0, 1.0)
+        res.particle["death_s"].draw(gfx.rgb' 1.0, 1.0, 1.0)
     end
 
     love.keypressed = fn _key, scancode, repeat do
