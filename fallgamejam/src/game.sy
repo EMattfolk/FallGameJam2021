@@ -151,8 +151,10 @@ next_turn :: fn state do
         i := 0
         loop i < len(state.graph.nodes) do
             spawn :: fn faction do
-                if faction == state.player_turn do
-                    guys -> push' guy.new_guy(faction, i)
+                if len(get_guys_on_node' state, i) < 2 do
+                    if faction == state.player_turn do
+                        guys -> push' guy.new_guy(faction, i)
+                    end
                 end
             end
 
