@@ -200,13 +200,23 @@ neighboursOf :: fn node: int, graph -> [int] do
     neighbours
 end
 
-facingNeighbour :: fn node: int, direction: (float, float), graph -> int do
+facingNeighbour :: fn node: int, faction, direction: (float, float), graph -> int do
     nDirection := normalize' direction
     origo := graph.nodes[node].position
     neighbours := neighboursOf' node, graph
     best := -1
     bestScalar := -2.
     neighbours -> for_each' fn neighbour do
+        case graph.nodes[neighbour].tile do
+            Base f do
+                if guy.faction_to_int(f) != guy.faction_to_int(faction) do
+                    ret
+                else do
+                end
+            end
+            else do end
+        end
+
         nNeighbour := normalize(graph.nodes[neighbour].position - origo)
         cosPhi := dot' nDirection, nNeighbour
 

@@ -63,7 +63,7 @@ end
 move_active_guy :: fn state, dir do
     g :: state -> guy_to_move'
     old :: g.node
-    new :: graph.facingNeighbour' old, dir, state.graph
+    new :: graph.facingNeighbour' old, g.faction, dir, state.graph
 
     guys_on_new_node :: get_guys_on_node' state, new
 
@@ -432,7 +432,7 @@ init :: fn do
                     case state.inputState do
                         MoveGuyDirection dir do
                             g :: state -> guy_to_move'
-                            facing :: graph.facingNeighbour' g.node, dir, state.graph
+                            facing :: graph.facingNeighbour' g.node, g.faction, dir, state.graph
                             guy.drawGuyDirection' g, facing, state.graph
                         end
                         else do end
