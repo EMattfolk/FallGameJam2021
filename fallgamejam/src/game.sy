@@ -237,6 +237,7 @@ end
 States :: enum
     MainMenu menu.Menu,
     Game GameState,
+    Victory guy.Faction,
 end
 
 InputState :: enum
@@ -371,20 +372,29 @@ init :: fn do
     mainMenuFont :: gfx.createFont(res.font["menu"])
 
     scene := States.MainMenu menu.createMenu([])
-    scene = States.MainMenu menu.createMenu([
-        ("2 Players", fn do
-            scene = States.Game new_game' 2
-        end),
-        ("3 Players", fn do
-            scene = States.Game new_game' 3
-        end),
-        ("4 Players", fn do
-            scene = States.Game new_game' 4
-        end),
-        ("Exit", fn do
-            love.event.quit' 0
-        end)
-    ])
+
+    showMenu :: fn do
+        scene = States.MainMenu menu.createMenu([
+            ("2 Players", fn do
+                scene = States.Game new_game' 2
+            end),
+            ("3 Players", fn do
+                scene = States.Game new_game' 3
+            end),
+            ("4 Players", fn do
+                scene = States.Game new_game' 4
+            end),
+            ("Exit", fn do
+                love.event.quit' 0
+            end)
+        ])
+    end
+
+    showVictory :: fn fac do
+        scene = States.Victory fac
+    end
+
+    showMenu'
 
     update :: fn delta do
         case scene do
@@ -452,6 +462,10 @@ init :: fn do
                 end
 
             end
+
+            Victory do
+            end
+
             else do <!> end
         end
 
@@ -525,6 +539,26 @@ init :: fn do
                 guy.crest_image(guy.Faction.Cloudberry).drawCentered' MIDDLE + C_OFFSET, 0.0, SCALE
                 guy.crest_image(guy.Faction.Gooseberry).drawCentered' MIDDLE + G_OFFSET, 0.0, SCALE
                 guy.crest_image(guy.Faction.Strawberry).drawCentered' MIDDLE + S_OFFSET, 0.0, SCALE
+            end
+
+            Victory fac do
+                MIDDLE :: gfx.screenSizef() / (2., 2.)
+                TEXT_SCALE :: 1.
+
+                TEXT_COLOR :: gfx.rgb' 1., 1., 1.
+                mainMenuFont.drawTextFT(
+                    TEXT_COLOR,
+                    "Victory",
+                    MIDDLE + (-300., -200.),
+                    gfx.Alignment.Center,
+                    600.0,
+                    0.0,
+                    TEXT_SCALE
+                )
+
+                CREST_OFFSET :: (0., 100.)
+                SCALE :: (2., 2.)
+                guy.crest_image(fac).drawCentered' MIDDLE + CREST_OFFSET, 0.0, SCALE
             end
 
             Game state do
@@ -631,6 +665,9 @@ init :: fn do
                         end
                     end else do end
                 end
+            end
+            Victory do
+                showMenu'
             end else do <!> end
         end
     end
@@ -656,7 +693,6 @@ inputDirection :: fn state -> Maybe do // Maybe (float, float)
     if res == (0., 0.,) do
         ret Maybe.Just ctrl.playerControllers[playerIndex(state)].joystick
     end
-
 
     ret Maybe.Just (normalize' res)
 end
