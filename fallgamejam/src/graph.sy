@@ -133,7 +133,8 @@ graphCenter :: fn graph: Graph ->
 end
 
 force_function :: fn distance ->
-    (NODE_SIZE * 4.0 - distance) * 2.0
+    t :: (NODE_SIZE * 5.0 - distance) * 2.0
+    t
 end
 
 updateGraph :: fn graph: Graph, delta do
@@ -150,12 +151,17 @@ updateGraph :: fn graph: Graph, delta do
         screen_center :: gfx.screenSizef() * (0.5, 0.5)
         node.velocity += (screen_center - node.position) * (delta, delta)
 
+        if node.is_pinned do
+            f :: 2.0
+            node.velocity += (node.pinned - node.position) * (f, f)
+        end
+
         force :: 400.
         graph.nodes -> for_each' fn other do
             diff :: node.position - other.position
             mag :: magnitude_squared' diff
-            if mag > 5. do
-                node.velocity += (force, force) * diff / (mag, mag)
+            if mag > 0.1 do
+                node.velocity += (force, force) * diff * (10.0, 10.0) / (mag, mag)
             end
         end
 
@@ -175,17 +181,35 @@ Node :: blob {
     position: (float, float),
     velocity: (float, float),
     tile: Tile,
+    is_pinned: bool,
+    pinned: (float, float),
 }
 
 new_node :: fn tile, position ->
     width :: love.graphics.getWidth'
     height :: love.graphics.getHeight'
-    offset :: (sfx.random(-10., 10.), sfx.random(-10., 10.))
+    offset :: (sfx.random(-100., 100.), sfx.random(-100., 100.))
 
     Node {
         position: position + offset,
-        velocity: (0., 0.),
+        velocity: offset * (20., 20.),
         tile: tile,
+        is_pinned: false,
+        pinned: position,
+    }
+end
+
+new_node_pin :: fn tile, position ->
+    width :: love.graphics.getWidth'
+    height :: love.graphics.getHeight'
+    offset :: (sfx.random(-100., 100.), sfx.random(-100., 100.))
+
+    Node {
+        position: position + offset,
+        velocity: offset * (20., 20.),
+        tile: tile,
+        is_pinned: true,
+        pinned: position,
     }
 end
 
@@ -277,12 +301,12 @@ createGraph :: fn -> Graph do
             (1, 2),
             (2, 3),
             (3, 4),
-            (4, 5),
+            // (4, 5),
             (5, 6),
 
             (0, 7),
             (1, 9),
-            (3, 10),
+            // (3, 10),
             (5, 11),
             (6, 13),
 
@@ -382,23 +406,24 @@ createTwoPlayer :: fn -> Graph do
 end
 
 createThreePlayerGraph :: fn -> Graph do
+    s :: 2.0
     Graph {
         nodes: [
            new_node(Tile.Base Faction.Blueberry, (0., 300.)),
            new_node(Tile.Empty, (-300., 200.)),
-           new_node(Tile.EmptyFactory, (-200., 200.)),
+           new_node_pin(Tile.EmptyFactory, (-200. * s, 200. * s)),
            new_node(Tile.Empty, (0., 200.)),
-           new_node(Tile.EmptyFactory, (200., 200.)),
+           new_node_pin(Tile.EmptyFactory, (200. * s, 200. * s)),
            new_node(Tile.Empty, (300., 200.)),
            new_node(Tile.Empty, (-100., 100.)),
 
-           new_node(Tile.EmptyFactory, (0., 0.)),
+           new_node_pin(Tile.EmptyFactory, (0., 0.)),
            new_node(Tile.Empty, (100., 100.)),
            new_node(Tile.Empty, (-200., -100.)),
            new_node(Tile.Empty, (0., -100.)),
            new_node(Tile.Empty, (200., -100.)),
            new_node(Tile.Base Faction.Strawberry, (-300., -200.)),
-           new_node(Tile.EmptyFactory, (0., -200.)),
+           new_node_pin(Tile.EmptyFactory, (0. * s, -200. * s)),
 
            new_node(Tile.Base Faction.Cloudberry, (300., -200.)),
            new_node(Tile.Empty, (0., -300.)),
