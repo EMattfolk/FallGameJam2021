@@ -1,6 +1,7 @@
 use /gfx
 use graph
 use /res/
+from /love use love
 
 Faction :: enum
     Blueberry,
@@ -56,6 +57,7 @@ Guy :: blob {
     node: int, // node index
     faction: Faction,
     time: float, // For animating
+    active: bool,
 }
 
 new_guy :: fn faction, node ->
@@ -63,30 +65,43 @@ new_guy :: fn faction, node ->
         node: node,
         faction: faction,
         time: 0.0,
+        active: true,
     }
 end
 
 updateGuy :: fn guy: Guy, delta: float do
     guy.time += delta
+    guy.active = true
 end
 
 ANIMATION_SPEED :: .1
 ANIMATION_SEQ :: [0, 1, 2, 1]
 
 drawGuy :: fn guy: Guy, g: graph.Graph do
+    frame := rem(as_int(guy.time / ANIMATION_SPEED), len(ANIMATION_SEQ))
+    c := gfx.rgb(1., 1., 1.)
+    if not guy.active do
+        s :: 0.7
+        c = gfx.rgb(s, s, s)
+        frame = 0
+    end
+
     images :: guy.faction -> guy_images'
-    frame :: rem(as_int(guy.time / ANIMATION_SPEED), len(ANIMATION_SEQ))
     image :: images[ANIMATION_SEQ[frame]]
     tint :: gfx.rgb' 1., 1., 1.
     node :: g.nodes[guy.node]
     pos :: node.position
-    image.drawCentered' pos, 0., (1., 1.)
+    image.drawTintedCentered' c, pos, 0., (1., 1.)
+
+    guy.active = false
 end
 
 drawGuyDirection :: fn guy: Guy, facing_node: int, graph: graph.Graph do
-    c := gfx.rgb' 1., 1., 1.
-    rot :: angle' graph.nodes[facing_node].position - graph.nodes[guy.node].position
-    arrow := res.img["arrow"]
-    pos :: graph.nodes[guy.node].position
+    a :: graph.nodes[facing_node].position
+    b :: graph.nodes[guy.node].position
+    rot :: angle' a - b
+    arrow :: res.img["arrow"]
+    t :: 0.5 + 0.05 * sin' 4.0 * love.timer.getTime()
+    pos :: b + (a - b) * (t, t)
     arrow.drawCentered' pos, rot, (1., 1.)
 end

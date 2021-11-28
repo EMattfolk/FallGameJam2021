@@ -1,5 +1,6 @@
 from /love use love
 use /gfx
+use /res/
 use guy
 from guy use Faction
 
@@ -43,6 +44,10 @@ tileColor :: fn tile ->
 end
 
 drawNode :: fn node: Node do
+
+    c :: gfx.rgba' 1., 1. 1. 0.2
+    s :: 0.7
+    res.img["blurr"].drawTintedCentered' c, node.position, 0.0, (s, s)
     case node.tile do
         Base faction do
             guy.crest_image(faction).drawCentered' node.position, 0.0, (1., 1.)
@@ -72,8 +77,8 @@ drawGraph :: fn graph: Graph do
         n1 := graph.nodes[edge[0]]
         n2 := graph.nodes[edge[1]]
 
-        c := gfx.rgb' 0., 0., 0.
-        gfx.drawLine' c, n1.position, n2.position
+        c := gfx.rgba' 1., 1., 1., 0.3
+        gfx.drawLinew' c, 2., n1.position, n2.position
     end
 
     graph.nodes -> for_each' drawNode
@@ -92,7 +97,7 @@ graphCenter :: fn graph: Graph ->
 end
 
 force_function :: fn distance ->
-    (NODE_SIZE * 3.50 - distance) * 2.0
+    (NODE_SIZE * 4.0 - distance) * 2.0
 end
 
 updateGraph :: fn graph: Graph, delta do
