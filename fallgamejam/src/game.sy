@@ -153,13 +153,11 @@ next_turn :: fn state do
 
     guys :: state.guys[fi]
 
-    end_of_turn :: len(to_move) == 0 and fi == 0
-    if end_of_turn do
-        state.turn += 1
-    end
-
-    if end_of_turn and rem(state.turn, 4) == 0 do
+    state.turns_until_score -= 1
+    if state.turns_until_score == 0 do
         state.score += graph.scoreGraph' state.graph
+
+        state.turns_until_score = love.math.random(4, 10) * len(state.factions)
     end
 
     if len(to_move) == 0 do
@@ -224,7 +222,7 @@ GameState :: blob {
     guys: {int: [guy.Guy]},
     guys_to_move: {int: [guy.Guy]},
     score: (int, int, int, int),
-    turn: int,
+    turns_until_score: int,
     factions: [guy.Faction],
     player_turn: guy.Faction,
     moves_left: int,
@@ -316,7 +314,7 @@ new_game :: fn num_players ->
         factions: factions,
         player_turn: guy.Faction.Blueberry,
         score: (0, 0, 0, 0),
-        turn: 1,
+        turns_until_score: 4,
         moves_left: 1,
         inputState: InputState.MoveGuy,
     }
@@ -534,6 +532,12 @@ init :: fn do
 
                 s :: as_str' state.score
                 mainMenuFont.drawText' WHITE, s, (100.0, 50.0)
+
+                if state.turns_until_score <= 4 do
+                    s :: "Jamfest in " + as_str(state.turns_until_score) + " turns"
+                    height :: love.graphics.getHeight'
+                    mainMenuFont.drawText' WHITE, s, (100.0, as_float(height) - 100.0)
+                end
             end
 
             else do <!> end
