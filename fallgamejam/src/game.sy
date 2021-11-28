@@ -12,11 +12,7 @@ use guy
 from /main use varargs
 
 clone :: fn list ->
-    c :: []
-    list -> for_each' fn x ->
-        c -> push' x
-    end
-    ret c
+    list -> map' fn x -> x end
 end
 
 // Shuffle, but badly
@@ -158,11 +154,7 @@ init :: fn do
         end)
     ])
 
-    time := 0.
-
     update :: fn delta do
-        time = time + delta
-
         case scene do
             MainMenu _ do
             end
