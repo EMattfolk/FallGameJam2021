@@ -425,7 +425,7 @@ init :: fn do
                                     // friendly faction
                                     ef := guy.faction_to_int(other_fn)
 
-                                    kill := false
+                                    kill = false
                                     state.guys[ef] = state.guys[ef] -> filter' fn other_guy -> do
                                         if other_guy.node == g.node and not kill do
                                             kill = true
@@ -441,9 +441,6 @@ init :: fn do
                                     if kill do
                                         print' g
                                         state.guys[ff] = state.guys[ff] -> filter' fn friendly_guy -> do
-                                            print' "Comparison: "
-                                            print' friendly_guy
-                                            print' friendly_guy != g
                                             friendly_guy != g
                                         end
                                     end
@@ -470,7 +467,7 @@ init :: fn do
                                     end)()
                                 end
 
-                                if state.moves_left > 0 do
+                                if not kill and state.moves_left > 0 do
                                     case state.inputState do
                                         MoveGuyDirection _ do
                                             state.inputState = InputState.MoveGuy
@@ -479,9 +476,8 @@ init :: fn do
                                     end
 
                                     state.moves_left = state.moves_left - 1
-                                    else do
-                                        next_turn' state
-                                    end
+                                else do
+                                    next_turn' state
                                 end
                             else do end
                         end
