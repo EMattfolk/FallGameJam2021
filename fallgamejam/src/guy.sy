@@ -140,5 +140,5 @@ drawGuyDirection :: fn guy: Guy, facing_node: int, graph: graph.Graph do
     arrow :: res.img["arrow"]
     t :: 0.5 + 0.05 * sin' 4.0 * love.timer.getTime()
     pos :: b + (a - b) * (t, t)
-    arrow.drawCentered' pos, rot, (1., 1.)
+    arrow.drawCentered' pos, rot, (1.3, 1.3)
 end
