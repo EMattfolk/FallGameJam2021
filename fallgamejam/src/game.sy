@@ -74,6 +74,9 @@ move_active_guy :: fn state, dir do
     g :: state -> guy_to_move'
     old :: g.node
     new :: graph.facingNeighbour' old, count_guys_of_faction(state), g.faction, dir, state.graph
+    if new != -1 do
+        state.moves_left = 0
+    end
 
     guys_on_new_node :: get_guys_on_node' state, new
 
@@ -443,7 +446,9 @@ init :: fn do
                         MoveGuyDirection dir do
                             g :: state -> guy_to_move'
                             facing :: graph.facingNeighbour' g.node, count_guys_of_faction(state), g.faction, dir, state.graph
-                            guy.drawGuyDirection' g, facing, state.graph
+                            if facing != -1 do
+                                guy.drawGuyDirection' g, facing, state.graph
+                            end
                         end
                         else do end
                     end
