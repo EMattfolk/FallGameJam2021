@@ -460,9 +460,10 @@ init :: fn do
                                             Empty ret graph.Tile.Captured f
                                             Factory _ ret graph.Tile.Factory f
                                             EmptyFactory ret graph.Tile.Factory f
+                                            Base f ret graph.Tile.Base f
                                             else do
+                                                print' "Remember to add new tile!"
                                                 <!>
-                                                // TODO shouldn't be able to move to enemy base
                                             end
                                         end
                                         ret graph.Tile.Empty
