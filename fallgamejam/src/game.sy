@@ -369,7 +369,6 @@ new_game :: fn num_players ->
         factions -> push' guy.int_to_faction' i
     end
 
-
     gg := graph.createThreePlayerGraph()
 
     if num_players == 2 do
@@ -377,7 +376,7 @@ new_game :: fn num_players ->
     else if num_players == 3 do
         gg = graph.createThreePlayerGraph'
     else if num_players == 4 do
-        <!>
+        gg = graph.createFourPlayerGraph()
     end
     graph :: gg
 

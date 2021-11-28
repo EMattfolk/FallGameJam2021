@@ -470,4 +470,141 @@ createThreePlayerGraph :: fn -> Graph do
     }
 end
 
+createFourPlayerGraph :: fn -> Graph do
+    Graph {
+        nodes: [
+            new_node(Tile.Empty, (50., 0.)),
+            new_node(Tile.Empty, (-50., 0.)),
+            new_node(Tile.Empty, (-40., 0.)),
+            new_node(Tile.Empty, (-40., 20.)),
+            new_node(Tile.Empty, (-40., -20.)),
+
+            new_node(Tile.Base Faction.Blueberry, (-30., 30.)),
+            new_node(Tile.Empty, (-30., 10.)),
+            new_node(Tile.Empty, (-30., -10.)),
+            new_node(Tile.Base Faction.Strawberry, (-30., -30.)),
+            new_node(Tile.Empty, (-20., -40.)),
+
+            new_node(Tile.Empty, (-20., 40.)),
+            new_node(Tile.Empty, (-10., 30.)),
+            new_node(Tile.Empty, (-20., 20.)),
+            new_node(Tile.Empty, (-20., -20.)),
+            new_node(Tile.Empty, (-10., -30.)),
+
+            new_node(Tile.Empty, (0., -40.)),
+            new_node(Tile.Empty, (0., -50.)),
+            new_node(Tile.Empty, (0., 50.)),
+            new_node(Tile.Empty, (0., 40.)),
+            new_node(Tile.Empty, (10., 30.)),
+
+            new_node(Tile.Empty, (20., 20.)),
+            new_node(Tile.EmptyFactory, (0., 10.)),
+            new_node(Tile.Empty, (-10., 0.)),
+            new_node(Tile.Empty, (10., 0.)),
+            new_node(Tile.EmptyFactory, (0., -10.)),
+
+            new_node(Tile.Empty, (20., 40.)),
+            new_node(Tile.Base Faction.Gooseberry, (30., 30.)),
+            new_node(Tile.Empty, (30., 10.)),
+            new_node(Tile.Empty, (30., -10.)),
+            new_node(Tile.Empty, (20., -20.)),
+
+            new_node(Tile.Empty, (10., -30.)),
+            new_node(Tile.Empty, (20., -40.)),
+            new_node(Tile.Base Faction.Cloudberry, (30., -30.)),
+            new_node(Tile.Empty, (40., -20.)),
+            new_node(Tile.Empty, (40., 0.)),
+
+            new_node(Tile.Empty, (40., 20.)),
+
+        ],
+        edges: [
+            (0, 34),
+            (1, 2),
+            (2, 3),
+            (2, 4),
+            (2, 6),
+
+            (2, 7),
+            (3, 5),
+            (3, 6),
+            (4, 7),
+            (4, 8),
+
+            (5, 10),
+            (5, 11),
+            (5, 6),
+            (6, 7),
+            (6, 12),
+
+            (7, 8),
+            (7, 13),
+            (8, 9),
+            (8, 14),
+            (9, 14),
+
+            (9, 15),
+            (10, 18),
+            (10, 11),
+            (11, 12),
+            (11, 18),
+
+            (11, 19),
+            (12, 20),
+            (12, 21),
+            (12, 22),
+            (12, 13),
+
+            (13, 22),
+            (13, 24),
+            (13, 29),
+            (13, 14),
+            (14, 30),
+
+            (14, 15),
+            (15, 16),
+            (15, 30),
+            (15, 31),
+            (17, 18),
+
+            (18, 25),
+            (18, 19),
+            (19, 25),
+            (19, 26),
+            (19, 20),
+
+            (20, 21),
+            (20, 23),
+            (20, 29),
+            (20, 27),
+            (21, 22),
+
+            (21, 23),
+            (22, 24),
+            (23, 24),
+            (23, 29),
+            (25, 26),
+
+            (26, 35),
+            (26, 27),
+            (27, 35),
+            (27, 34),
+            (27, 28),
+
+            (28, 34),
+            (28, 33),
+            (28, 32),
+            (28, 29),
+            (29, 30),
+
+            (30, 31),
+            (30, 32),
+            (31, 32),
+            (32, 33),
+            (33, 34),
+
+            (34, 35),
+       ],
+    }
+end
 
