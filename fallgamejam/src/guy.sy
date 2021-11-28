@@ -24,6 +24,10 @@ faction_to_int :: fn faction -> int
     ret 0
 end
 
+factionSuffix :: fn faction: Faction -> str
+    ["_b", "_c", "_g", "_s"][faction_to_int(faction)]
+end
+
 int_to_faction :: fn integer -> Faction
     if integer == faction_to_int(Faction.Blueberry) do
         ret Faction.Blueberry
