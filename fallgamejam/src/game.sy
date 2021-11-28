@@ -550,6 +550,22 @@ init :: fn do
 
     voronoiShader :: love.graphics.newShader("res/voronoi.glsl")
 
+    drawControllers :: fn do
+        SIZE :: gfx.screenSizef'
+        TEXT_COLOR :: gfx.rgb' 1., 1., 1.
+        TEXT_SCALE :: .5
+
+        mainMenuFont.drawTextFT(
+            TEXT_COLOR,
+            "rb  move\na  finish",
+            SIZE - (140., 120.),
+            gfx.Alignment.Right,
+            250.,
+            0.0,
+            TEXT_SCALE
+        )
+    end
+
     draw :: fn do
         drawVoronoiBackground :: fn vertices: [(*, *, *)] do
             love.graphics.setShader' voronoiShader
@@ -662,6 +678,9 @@ init :: fn do
                         graph.shaderColor(node)
                     )
                 end) -> drawVoronoiBackground'
+
+                drawControllers'
+
                 love.graphics.translate' offset[0], offset[1]
                 do
                     graph.drawGraph' state.graph, state
