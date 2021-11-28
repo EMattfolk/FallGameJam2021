@@ -431,7 +431,7 @@ init :: fn do
                     state.factions -> for_each' fn f do
                         guys :: state.guys[guy.faction_to_int(f)]
                         guys -> for_each' fn g do
-                            guy.drawGuy' g, state.graph
+                            guy.drawGuy' state, g, state.graph
                         end
                     end
 
