@@ -462,7 +462,13 @@ init :: fn do
                         case key do
                             Space do
                                 g :: state -> guy_to_move'
-                                g.node = graph.facingNeighbour' g.node, dir, state.graph
+                                old :: g.node
+                                new :: graph.facingNeighbour' old, dir, state.graph
+                                g.node = new
+
+                                diff :: state.graph.nodes[old].position - state.graph.nodes[new].position
+                                f :: 25.0
+                                state.graph.nodes[new].velocity -= diff * (f, f)
 
                                 kill := false
                                 ff :: guy.faction_to_int(g.faction)
