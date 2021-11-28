@@ -439,6 +439,9 @@ init :: fn do
     defaultFont :: gfx.createFont(love.graphics.getFont())
     mainMenuFont :: gfx.createFont(res.font["menu"])
 
+    res.sound["theme"].setLooping(true)
+    res.sound["theme"].play()
+
     scene := States.MainMenu menu.createMenu([])
 
     showMenu :: fn do
