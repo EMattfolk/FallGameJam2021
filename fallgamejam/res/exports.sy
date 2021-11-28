@@ -6,8 +6,8 @@ from /love use love
 
 img :: {:}
 sound :: {:}
-
 font :: {:}
+particle :: {:}
 
 loadResources :: fn do
     img["guy_b_1"] = gfx.newImage("res/guy_b_1.png")
@@ -36,4 +36,33 @@ loadResources :: fn do
     sound["explosion"] = sfx.newSound("res/explosion.wav", false, SoundType.Static)
 
     font["menu"] = love.graphics.newFont("res/Enchanted Land.otf", 100)
+
+    // These 4 should be the same
+    particle["death_b"] = gfx.newParticles(img["blurr"])
+    particle["death_b"].setSpeed(100.0, 200.0)
+    particle["death_b"].setSpread(1.0)
+    particle["death_b"].setLinearDamping(1.0, 1.0)
+    particle["death_b"].setParticleLifetime(0.5, 1.0)
+    particle["death_b"].setSizes(0.06, 0.1)
+
+    particle["death_c"] = gfx.newParticles(img["blurr"])
+    particle["death_c"].setSpeed(100.0, 200.0)
+    particle["death_c"].setSpread(1.0)
+    particle["death_c"].setLinearDamping(1.0, 1.0)
+    particle["death_c"].setParticleLifetime(0.5, 1.0)
+    particle["death_c"].setSizes(0.06, 0.1)
+
+    particle["death_g"] = gfx.newParticles(img["blurr"])
+    particle["death_g"].setSpeed(100.0, 200.0)
+    particle["death_g"].setSpread(1.0)
+    particle["death_g"].setLinearDamping(1.0, 1.0)
+    particle["death_g"].setParticleLifetime(0.5, 1.0)
+    particle["death_g"].setSizes(0.06, 0.1)
+
+    particle["death_s"] = gfx.newParticles(img["blurr"])
+    particle["death_s"].setSpeed(100.0, 200.0)
+    particle["death_s"].setSpread(1.0)
+    particle["death_s"].setLinearDamping(1.0, 1.0)
+    particle["death_s"].setParticleLifetime(0.5, 1.0)
+    particle["death_s"].setSizes(0.06, 0.1)
 end

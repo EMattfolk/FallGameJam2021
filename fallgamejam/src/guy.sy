@@ -23,6 +23,10 @@ faction_to_int :: fn faction -> int
     ret 0
 end
 
+factionSuffix :: fn faction: Faction -> str
+    ["_b", "_c", "_g", "_s"][faction_to_int(faction)]
+end
+
 crest_image :: fn faction -> gfx.Image
     case faction do
         Blueberry ret res.img["crest_b"]
