@@ -41,51 +41,48 @@ guy_to_move :: fn state ->
     ret state.guys_to_move[guy.faction_to_int(state.player_turn)] -> last'
 end
 
+get_guys_on_node :: fn state, node ->
+    guys_on_node :: []
+    state.factions -> for_each' fn other_fn do
+        ef := guy.faction_to_int(other_fn)
+        state.guys[ef] -> for_each' fn other_guy ->
+            if other_guy.node == node do
+                guys_on_node -> push' other_guy
+            end
+        end
+    end
+    guys_on_node
+end
+
+kill_guy :: fn state, g do
+    f :: guy.faction_to_int(g.faction)
+    state.guys_to_move[f] = state.guys_to_move[f] -> filter' fn o -> do o != g end
+    state.guys[f] = state.guys[f] -> filter' fn o -> do o != g end
+end
+
 move_active_guy :: fn state, dir do
     g :: state -> guy_to_move'
     old :: g.node
     new :: graph.facingNeighbour' old, dir, state.graph
-    g.node = new
 
-    diff :: state.graph.nodes[old].position - state.graph.nodes[new].position
-    f :: 25.0
-    state.graph.nodes[new].velocity -= diff * (f, f)
+    guys_on_new_node :: get_guys_on_node' state, new
 
-    kill := false
-    ff :: guy.faction_to_int(g.faction)
-
-    state.factions -> for_each' fn other_fn do
-        if g.faction == other_fn ret
-
-        // friendly faction
-        ef := guy.faction_to_int(other_fn)
-
-        kill = false
-        state.guys[ef] = state.guys[ef] -> filter' fn other_guy -> do
-            if other_guy.node == g.node and not kill do
-                kill = true
-                state.guys_to_move[ef] = state.guys_to_move[ef] -> filter' fn other_other_guy -> do
-                    other_other_guy != other_guy
-                end
-                ret false
-            else do
-                ret true
-            end
-        end
-
-        if kill do
-            print' g
-            state.guys[ff] = state.guys[ff] -> filter' fn friendly_guy -> do
-                friendly_guy != g
-            end
-        end
+    friendly_map :: guys_on_new_node -> map' fn o ->
+        guy.faction_to_int(o.faction) == guy.faction_to_int(g.faction)
     end
 
-    node :: state.graph.nodes[g.node]
+    // Cool visual
+    do
+        diff :: state.graph.nodes[old].position - state.graph.nodes[new].position
+        f :: 25.0
+        state.graph.nodes[new].velocity -= diff * (f, f)
+    end
 
-    f :: g.faction
-
-    if not kill do
+    if len(guys_on_new_node) == 0 or friendly_map[0] do
+        // Done
+        g.node = new
+        f :: g.faction
+        node :: state.graph.nodes[new]
         node.tile = (fn ->
             case node.tile do
                 Captured _ ret graph.Tile.Captured f
@@ -100,18 +97,24 @@ move_active_guy :: fn state, dir do
             end
             ret graph.Tile.Empty
         end)()
-    end
 
-    if not kill and state.moves_left > 0 do
-        case state.inputState do
-            MoveGuyDirection _ do
-                state.inputState = InputState.MoveGuy
+        if state.moves_left < 0 do
+            next_turn' state
+        else do
+            case state.inputState do
+                MoveGuyDirection _ do
+                    state.inputState = InputState.MoveGuy
+                end
+                else do <!> end
             end
-            else do <!> end
-        end
 
-        state.moves_left = state.moves_left - 1
-    else do
+            state.moves_left = state.moves_left - 1
+        end
+    else if not friendly_map[0] do
+        // Kill!
+        kill_guy' state, guys_on_new_node[0]
+        kill_guy' state, g
+
         next_turn' state
     end
 end
