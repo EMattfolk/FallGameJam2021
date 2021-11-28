@@ -8,6 +8,7 @@ use controller as ctrl
 use graph
 use menu
 use guy
+from guy use faction_to_int
 
 from /main use varargs
 
@@ -102,12 +103,7 @@ move_active_guy :: fn state, dir do
         if state.moves_left == 0 do
             next_turn' state
         else do
-            case state.inputState do
-                MoveGuyDirection _ do
-                    state.inputState = InputState.MoveGuy
-                end
-                else do <!> end
-            end
+            state.inputState = InputState.MoveGuy
             state.moves_left = state.moves_left - 1
         end
     else if not friendly_map[0] do
@@ -246,10 +242,23 @@ send_shader_graph_positions :: fn shader: Shader, points do
     end
 end
 
+playerIndex :: fn state -> do
+    fis := state.factions -> map' fn faction -> do
+        faction_to_int' faction
+    end
+
+    i := 0
+    loop i < len(fis) do
+        if fis[i] == faction_to_int(state.player_turn) do break end
+        i += 1
+    end
+    ret i
+end
+
 init :: fn do
     makeFullscreen'
 
-    ctrl.initControllers' 2
+    ctrl.initControllers' 4
 
     res.loadResources()
 
@@ -311,12 +320,12 @@ init :: fn do
                     end
                 end
 
-                deadzone :: 0.2
+                deadzone :: 0.5
 
                 // Inputs
                 case state.inputState do
                     MoveGuy do
-                        may_dir := inputDirection'
+                        may_dir := inputDirection' state
                         case may_dir do
                             Just dir do
                                 if magnitude(dir) > deadzone do
@@ -325,17 +334,35 @@ init :: fn do
                             end
                             else do end
                         end
+
+                        pi := playerIndex' state
+                        if ctrl.playerControllers[pi].finish do
+                            next_turn' state
+                        end
                     end
 
-                    MoveGuyDirection _ do
-                        may_dir := inputDirection'
+                    MoveGuyDirection old_dir do
+                        new_dir := old_dir
+
+                        may_dir := inputDirection' state
                         case may_dir do
                             Just dir do
                                 if magnitude(dir) > deadzone do
                                     state.inputState = InputState.MoveGuyDirection dir
+                                    new_dir = dir
                                 end
                             end
                             else do end
+                        end
+
+                        // Move guy
+                        pi := playerIndex' state
+                        if ctrl.playerControllers[pi].move do
+                            move_active_guy' state, new_dir
+                        end
+
+                        if ctrl.playerControllers[pi].finish do
+                            next_turn' state
                         end
                     end
 
@@ -484,9 +511,18 @@ init :: fn do
             Game state do
                 case state.inputState do
                     MoveGuyDirection dir do
+                        pi := playerIndex' state
                         case key do
                             Space do
-                                move_active_guy' state, dir
+                                ctrl.playerControllers -> for_each' fn controller do
+                                    controller.move = true
+                                end
+                                ctrl.playerControllers[pi].move = true
+                            end
+                            Return do
+                                ctrl.playerControllers -> for_each' fn controller do
+                                    controller.finish = true
+                                end
                             else do end
                         end
                     end else do end
@@ -507,14 +543,16 @@ Maybe :: enum
     Nothing,
 end
 
-inputDirection :: fn -> Maybe do // Maybe (float, float)
+inputDirection :: fn state -> Maybe do // Maybe (float, float)
     res := (0., 0.)
     if input.isKeyDown' input.Key.Up do res += (0., -1.) end
     if input.isKeyDown' input.Key.Down do res += (0., 1.) end
     if input.isKeyDown' input.Key.Left do res += (-1., 0.) end
     if input.isKeyDown' input.Key.Right do res += (1., -0.) end
     if res == (0., 0.,) do
-        ret Maybe.Nothing
+        ret Maybe.Just ctrl.playerControllers[playerIndex(state)].joystick
     end
+
+
     ret Maybe.Just (normalize' res)
 end
