@@ -2,6 +2,7 @@ use /gfx
 use graph
 use /res/
 from /love use love
+use game
 
 Faction :: enum
     Blueberry,
@@ -25,6 +26,26 @@ end
 
 factionSuffix :: fn faction: Faction -> str
     ["_b", "_c", "_g", "_s"][faction_to_int(faction)]
+end
+
+int_to_faction :: fn integer -> Faction
+    if integer == faction_to_int(Faction.Blueberry) do
+        ret Faction.Blueberry
+    end
+
+    if integer == faction_to_int(Faction.Cloudberry) do
+        ret Faction.Cloudberry
+    end
+
+    if integer == faction_to_int(Faction.Gooseberry) do
+        ret Faction.Gooseberry
+    end
+
+    if integer == faction_to_int(Faction.Strawberry) do
+        ret Faction.Strawberry
+    end
+
+    <!>
 end
 
 crest_image :: fn faction -> gfx.Image
@@ -81,7 +102,8 @@ end
 ANIMATION_SPEED :: .1
 ANIMATION_SEQ :: [0, 1, 2, 1]
 
-drawGuy :: fn guy: Guy, g: graph.Graph do
+drawGuy :: fn state, guy: Guy, g: graph.Graph do
+
     frame := rem(as_int(guy.time / ANIMATION_SPEED), len(ANIMATION_SEQ))
     c := gfx.rgb(1., 1., 1.)
     if not guy.active do
@@ -94,7 +116,18 @@ drawGuy :: fn guy: Guy, g: graph.Graph do
     image :: images[ANIMATION_SEQ[frame]]
     tint :: gfx.rgb' 1., 1., 1.
     node :: g.nodes[guy.node]
-    pos :: node.position
+
+    pos := node.position
+    gs :: game.get_guys_on_node(state, guy.node)
+    if len(gs) == 2 do
+        if guy == gs[0] do
+            pos -= (10., 10.)
+        end
+        if guy == gs[1] do
+            pos += (10., 10.)
+        end
+    end
+
     image.drawTintedCentered' c, pos, 0., (1., 1.)
 
     guy.active = false

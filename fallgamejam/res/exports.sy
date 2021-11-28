@@ -27,6 +27,7 @@ loadResources :: fn do
     img["crest_c"] = gfx.newImage("res/crest_c.png")
     img["crest_g"] = gfx.newImage("res/crest_g.png")
     img["crest_s"] = gfx.newImage("res/crest_s.png")
+    img["tile_fact"] = gfx.newImage("res/tile_fact.png")
     img["arrow"] = gfx.newImage("res/arrow.png")
     img["blurr"] = gfx.newImage("res/blurred_circle.png")
 
