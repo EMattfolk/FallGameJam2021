@@ -2,7 +2,7 @@ from /love use love
 use /gfx
 use /res/
 use guy
-from guy use Faction
+from guy use (Faction, faction_to_int)
 
 //Camera :: blob {
 //
@@ -82,6 +82,28 @@ drawGraph :: fn graph: Graph do
     end
 
     graph.nodes -> for_each' drawNode
+end
+
+scoreGraph :: fn graph: Graph -> (int, int, int, int)
+    score :: [0, 0, 0, 0]
+    f :: fn node do
+        case node.tile do
+            Base faction do
+                score[faction_to_int(faction)] += 1
+            end
+            Factory faction do
+                score[faction_to_int(faction)] += 1
+            end
+            Empty do end
+            EmptyFactory do end
+            else do
+                print' "Remember to add score for the new tile variant!"
+                <!>
+            end
+        end
+    end
+    graph.nodes -> for_each' f
+    (score[0], score[1], score[2], score[3])
 end
 
 graphCenter :: fn graph: Graph ->
