@@ -464,6 +464,7 @@ init :: fn do
                                 g :: state -> guy_to_move'
                                 g.node = graph.facingNeighbour' g.node, dir, state.graph
 
+                                kill := false
                                 ff :: guy.faction_to_int(g.faction)
 
                                 state.factions -> for_each' fn other_fn do
@@ -492,6 +493,31 @@ init :: fn do
                                             print' friendly_guy
                                             print' friendly_guy != g
                                             friendly_guy != g
+                                        end
+                                    end
+                                end
+
+                                node :: state.graph.nodes[g.node]
+
+                                f :: g.faction
+
+                                if not kill do
+                                    case node.tile do
+                                        Captured _ do
+                                            node.tile = graph.Tile.Captured f
+                                        end
+                                        Empty do
+                                            node.tile = graph.Tile.Captured f
+                                        end
+                                        Factory _ do
+                                            node.tile = graph.Tile.Factory f
+                                        end
+                                        EmptyFactory do
+                                            node.tile = graph.Tile.Factory f
+                                        end
+                                        else do
+                                            <!>
+                                            // TODO shouldn't be able to move to enemy base
                                         end
                                     end
                                 end

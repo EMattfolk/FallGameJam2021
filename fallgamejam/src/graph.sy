@@ -21,6 +21,7 @@ end
 shaderColor :: fn node -> int
     case node.tile do
         Base faction ret guy.faction_to_int(faction)
+        Captured faction ret guy.faction_to_int(faction)
         Factory faction ret guy.faction_to_int(faction)
         Empty ret 4
         EmptyFactory ret 4
@@ -32,6 +33,7 @@ end
 tileColor :: fn tile ->
     case tile do
         Base faction ret factionColor(faction)
+        Captured faction ret factionColor(faction)
         Empty ret gfx.rgb' 0.5, 0.5, 0.5
         EmptyFactory ret gfx.rgb' 0.2, 0.2, 0.2
         Factory faction ret factionColor(faction)
@@ -50,16 +52,20 @@ drawNode :: fn node: Node do
         Base faction do
             guy.crest_image(faction).drawCentered' node.position, 0.0, (1., 1.)
         end
+        Captured faction do
+            c :: tileColor(node.tile)
+            gfx.drawCircle' c, node.position, NODE_SIZE
+        end
         Factory faction do
             c :: tileColor(node.tile)
             gfx.drawCircle' c, node.position, NODE_SIZE
         end
         Empty do
-            c :: gfx.rgb' 0.5, 0.5, 0.5
+            c :: tileColor(node.tile)
             gfx.drawCircle' c, node.position, NODE_SIZE
         end
         EmptyFactory do
-            c :: gfx.rgb' 0.2, 0.2, 0.2
+            c :: tileColor(node.tile)
             gfx.drawCircle' c, node.position, NODE_SIZE
         end
         else do <!> end
@@ -150,6 +156,7 @@ NODE_SIZE :: 30.
 
 Tile :: enum
     Base Faction,
+    Captured Faction,
     Factory Faction,
     Empty,
     EmptyFactory,
