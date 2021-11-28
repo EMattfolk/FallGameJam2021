@@ -164,13 +164,12 @@ next_turn :: fn state do
 
     if len(to_move) == 0 do
         i := 0
-        spawned := false
         loop i < len(state.graph.nodes) do
             spawn :: fn faction do
-                spawned = true
                 if len(get_guys_on_node' state, i) < 2 do
                     if faction == state.player_turn do
                         guys -> push' guy.new_guy(faction, i)
+                        res.sound["created"].playp' (0.7, 0.2), (1.0, 0.2)
                     end
                 end
             end
@@ -187,7 +186,6 @@ next_turn :: fn state do
             i = i + 1
         end
 
-        res.sound["created"].playp' (0.7, 0.1), (1.0, 0.1)
 
         state.guys_to_move[fi] = guys -> clone'
         shuffle' state.guys_to_move[fi]
