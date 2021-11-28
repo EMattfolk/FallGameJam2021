@@ -283,7 +283,7 @@ new_game :: fn num_players ->
         factions -> push' guy.int_to_faction' i
     end
 
-    graph :: graph.createThreePlayerGraph()
+    graph :: graph.createFourPlayerGraph()
 
     guys :: {:}
     guys_to_move :: {:}
