@@ -28,6 +28,14 @@ shuffle :: fn list: [*] do
     end
 end
 
+// Colors
+BACKGROUND_COLOR :: gfx.rgb' 50. / 255., 50. / 255., 50. / 255.
+MENU_COLOR :: gfx.rgb' 1., 1., 1.
+HEADER_COLOR :: gfx.rgb' 209. / 255., 59. / 255., 57. / 255.
+SELECTED_COLOR :: gfx.rgb' 229. / 255., 126. / 255., 124. / 255.
+WHITE :: gfx.rgb' 1., 1., 1.
+
+
 guy_to_move :: fn state ->
     ret state.guys_to_move[guy.faction_to_int(state.player_turn)] -> last'
 end
@@ -252,29 +260,20 @@ init :: fn do
         end
     end
 
-
-    col := gfx.rgb' 1., 0., 0.
-
     voronoiShader :: love.graphics.newShader("res/voronoi.glsl")
 
     draw :: fn do
-        white := gfx.rgb' 1., 1., 1.
-
         drawVoronoiBackground :: fn vertices: [(*, *, *)] do
             love.graphics.setShader' voronoiShader
             send_shader_graph_positions' voronoiShader, vertices
-            gfx.drawRect' white, (0., 0.), (as_float(love.graphics.getWidth'), as_float(love.graphics.getHeight'))
+            gfx.drawRect' WHITE, (0., 0.), (as_float(love.graphics.getWidth'), as_float(love.graphics.getHeight'))
             gfx.clearShader'
         end
 
         case scene do
             MainMenu menu do
-                BACKGROUND_COLOR :: gfx.rgb' 50. / 255., 50. / 255., 50. / 255.
                 gfx.drawRect' BACKGROUND_COLOR, (0., 0.), gfx.screenSizef()
 
-                MENU_COLOR :: gfx.rgb' 1., 1., 1.
-                HEADER_COLOR :: gfx.rgb' 209. / 255., 59. / 255., 57. / 255.
-                SELECTED_COLOR :: gfx.rgb' 229. / 255., 126. / 255., 124. / 255.
                 MENU_SIZE :: 1.
                 MIDDLE :: gfx.screenSizef() / (2., 2.)
 
@@ -324,17 +323,16 @@ init :: fn do
                 guy.crest_image(guy.Faction.Gooseberry).drawCentered' MIDDLE + G_OFFSET, 0.0, SCALE
                 guy.crest_image(guy.Faction.Strawberry).drawCentered' MIDDLE + S_OFFSET, 0.0, SCALE
             end
-            Game state do
-                i := 0
 
+            Game state do
                 offset :: graph.graphCenter' state.graph
 
                 state.graph.nodes -> map(fn node ->
-                    faction := graph.shaderColor(node)
-
-                    i = i + 1
-
-                    ret (node.position[0] + offset[0], node.position[1] + offset[1], faction)
+                    (
+                        node.position[0] + offset[0],
+                        node.position[1] + offset[1],
+                        graph.shaderColor(node)
+                    )
                 end) -> drawVoronoiBackground'
 
                 love.graphics.translate' offset[0], offset[1]
@@ -359,11 +357,10 @@ init :: fn do
                 end
                 love.graphics.origin'
 
-                c :: gfx.rgb' 1., 1., 1.
                 s :: as_str' state.score
-                mainMenuFont.drawText' c, s, (100.0, 50.0)
-
+                mainMenuFont.drawText' WHITE, s, (100.0, 50.0)
             end
+
             else do <!> end
         end
     end
@@ -426,18 +423,6 @@ init :: fn do
     end
 
     post_move :: fn state do
-        if state.moves_left > 0 do
-            case state.inputState do
-                MoveGuyDirection _ do
-                    state.inputState = InputState.MoveGuy
-                end
-                else do <!> end
-            end
-
-            state.moves_left = state.moves_left - 1
-        else do
-            next_turn' state
-        end
     end
 
     love.keypressed = fn _key, scancode, repeat do
@@ -519,28 +504,34 @@ init :: fn do
                                 f :: g.faction
 
                                 if not kill do
-                                    case node.tile do
-                                        Captured _ do
-                                            node.tile = graph.Tile.Captured f
+                                    node.tile = (fn ->
+                                        case node.tile do
+                                            Captured _ ret graph.Tile.Captured f
+                                            Empty ret graph.Tile.Captured f
+                                            Factory _ ret graph.Tile.Factory f
+                                            EmptyFactory ret graph.Tile.Factory f
+                                            else do
+                                                <!>
+                                                // TODO shouldn't be able to move to enemy base
+                                            end
                                         end
-                                        Empty do
-                                            node.tile = graph.Tile.Captured f
-                                        end
-                                        Factory _ do
-                                            node.tile = graph.Tile.Factory f
-                                        end
-                                        EmptyFactory do
-                                            node.tile = graph.Tile.Factory f
-                                        end
-                                        else do
-                                            <!>
-                                            // TODO shouldn't be able to move to enemy base
-                                        end
-                                    end
+                                        ret graph.Tile.Empty
+                                    end)()
                                 end
 
-                                post_move' state
-                            end
+                                if state.moves_left > 0 do
+                                    case state.inputState do
+                                        MoveGuyDirection _ do
+                                            state.inputState = InputState.MoveGuy
+                                        end
+                                        else do <!> end
+                                    end
+
+                                    state.moves_left = state.moves_left - 1
+                                    else do
+                                        next_turn' state
+                                    end
+                                end
                             else do end
                         end
                     end else do end
