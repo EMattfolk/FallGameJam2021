@@ -98,7 +98,8 @@ move_active_guy :: fn state, dir do
             ret graph.Tile.Empty
         end)()
 
-        if state.moves_left < 0 do
+
+        if state.moves_left == 0 do
             next_turn' state
         else do
             case state.inputState do
@@ -107,7 +108,6 @@ move_active_guy :: fn state, dir do
                 end
                 else do <!> end
             end
-
             state.moves_left = state.moves_left - 1
         end
     else if not friendly_map[0] do
