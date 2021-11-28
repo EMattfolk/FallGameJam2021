@@ -148,14 +148,10 @@ next_turn :: fn state do
 
     guys :: state.guys[fi]
 
-    end_of_turn :: len(to_move) == 0 and fi == 0
-    if end_of_turn do
-        state.turn += 1
-    end
-
-    if end_of_turn and rem(state.turn, 4) == 0 do
+    if rem(state.turn, 16) == 0 do
         state.score += graph.scoreGraph' state.graph
     end
+    state.turn += 1
 
     if len(to_move) == 0 do
         i := 0
