@@ -94,6 +94,9 @@ scoreGraph :: fn graph: Graph -> (int, int, int, int)
             Factory faction do
                 score[faction_to_int(faction)] += 1
             end
+            Captured faction do
+                score[faction_to_int(faction)] += 1
+            end
             Empty do end
             EmptyFactory do end
             else do

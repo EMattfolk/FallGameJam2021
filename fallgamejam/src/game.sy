@@ -4,6 +4,7 @@ use /res/
 use /input
 use /gfx
 
+use controller as ctrl
 use graph
 use menu
 use guy
@@ -11,11 +12,7 @@ use guy
 from /main use varargs
 
 clone :: fn list ->
-    c :: []
-    list -> for_each' fn x ->
-        c -> push' x
-    end
-    ret c
+    list -> map' fn x -> x end
 end
 
 // Shuffle, but badly
@@ -31,6 +28,14 @@ shuffle :: fn list: [*] do
         list[b] = temp
     end
 end
+
+// Colors
+BACKGROUND_COLOR :: gfx.rgb' 50. / 255., 50. / 255., 50. / 255.
+MENU_COLOR :: gfx.rgb' 1., 1., 1.
+HEADER_COLOR :: gfx.rgb' 209. / 255., 59. / 255., 57. / 255.
+SELECTED_COLOR :: gfx.rgb' 229. / 255., 126. / 255., 124. / 255.
+WHITE :: gfx.rgb' 1., 1., 1.
+
 
 guy_to_move :: fn state ->
     ret state.guys_to_move[guy.faction_to_int(state.player_turn)] -> last'
@@ -51,22 +56,6 @@ makeFullscreen :: fn do
     }
     love.window.setMode' 0, 0, w
 end
-
-newController :: fn -> Controller do
-    Controller {
-        joystick: (0., 0.),
-        finish: false,
-        move: false,
-    }
-end
-
-playerControllers: [Controller] = [ newController(), newController(), ]
-
-Controller :: blob {
-    joystick: (float, float),
-    finish: bool,
-    move: bool,
-}
 
 States :: enum
     MainMenu menu.Menu,
@@ -127,6 +116,8 @@ end
 init :: fn do
     makeFullscreen'
 
+    ctrl.initControllers' 2
+
     res.loadResources()
 
     defaultFont :: gfx.createFont(love.graphics.getFont())
@@ -171,45 +162,7 @@ init :: fn do
         end)
     ])
 
-    time := 0.
-
-    love.gamepadaxis = fn joystick: l.LoveJoystick, axis, size do
-        controllerIndex := ((joystick.getID' joystick) - 1) / 2
-
-        if axis == "rightx" do
-            controller := playerControllers[controllerIndex]
-            controller.joystick = (controller.joystick[0], size)
-        end else if axis == "righty" do
-            controller := playerControllers[controllerIndex]
-            controller.joystick = (size, controller.joystick[1])
-        end else if axis == "leftx" do
-            controller := playerControllers[controllerIndex+1]
-            controller.joystick = (controller.joystick[0], size)
-        end else if axis == "lefty" do
-            controller := playerControllers[controllerIndex+1]
-            controller.joystick = (size, controller.joystick[1])
-        end
-    end
-
-    love.gamepadpressed = fn joystick: l.LoveJoystick, button do
-        controllerIndex := ((joystick.getID' joystick) - 1) / 2
-        if button == "rightshoulder" do
-            playerControllers[controllerIndex].move = true
-        else if button == "a" do
-            playerControllers[controllerIndex].finish = true
-        else if button == "leftshoulder" do
-            playerControllers[controllerIndex+1].move = true
-        else if button == "dpdown" do
-            playerControllers[controllerIndex+1].finish = true
-        end else do print' "Unbound button" end
-    end
-
-    love.gamepadreleased = fn joystick: l.LoveJoystick, button do
-    end
-
     update :: fn delta do
-        time = time + delta
-
         case scene do
             MainMenu _ do
             end
@@ -254,35 +207,23 @@ init :: fn do
             else do <!> end
         end
 
-        playerControllers -> for_each' fn controller do
-            controller.finish = false
-            controller.move = false
-        end
+        ctrl.postTick'
     end
-
-
-    col := gfx.rgb' 1., 0., 0.
 
     voronoiShader :: love.graphics.newShader("res/voronoi.glsl")
 
     draw :: fn do
-        white := gfx.rgb' 1., 1., 1.
-
         drawVoronoiBackground :: fn vertices: [(*, *, *)] do
             love.graphics.setShader' voronoiShader
             send_shader_graph_positions' voronoiShader, vertices
-            gfx.drawRect' white, (0., 0.), (as_float(love.graphics.getWidth'), as_float(love.graphics.getHeight'))
+            gfx.drawRect' WHITE, (0., 0.), (as_float(love.graphics.getWidth'), as_float(love.graphics.getHeight'))
             gfx.clearShader'
         end
 
         case scene do
             MainMenu menu do
-                BACKGROUND_COLOR :: gfx.rgb' 50. / 255., 50. / 255., 50. / 255.
                 gfx.drawRect' BACKGROUND_COLOR, (0., 0.), gfx.screenSizef()
 
-                MENU_COLOR :: gfx.rgb' 1., 1., 1.
-                HEADER_COLOR :: gfx.rgb' 209. / 255., 59. / 255., 57. / 255.
-                SELECTED_COLOR :: gfx.rgb' 229. / 255., 126. / 255., 124. / 255.
                 MENU_SIZE :: 1.
                 MIDDLE :: gfx.screenSizef() / (2., 2.)
 
@@ -332,17 +273,16 @@ init :: fn do
                 guy.crest_image(guy.Faction.Gooseberry).drawCentered' MIDDLE + G_OFFSET, 0.0, SCALE
                 guy.crest_image(guy.Faction.Strawberry).drawCentered' MIDDLE + S_OFFSET, 0.0, SCALE
             end
-            Game state do
-                i := 0
 
+            Game state do
                 offset :: graph.graphCenter' state.graph
 
                 state.graph.nodes -> map(fn node ->
-                    faction := graph.shaderColor(node)
-
-                    i = i + 1
-
-                    ret (node.position[0] + offset[0], node.position[1] + offset[1], faction)
+                    (
+                        node.position[0] + offset[0],
+                        node.position[1] + offset[1],
+                        graph.shaderColor(node)
+                    )
                 end) -> drawVoronoiBackground'
 
                 love.graphics.translate' offset[0], offset[1]
@@ -367,11 +307,10 @@ init :: fn do
                 end
                 love.graphics.origin'
 
-                c :: gfx.rgb' 1., 1., 1.
                 s :: as_str' state.score
-                mainMenuFont.drawText' c, s, (100.0, 50.0)
-
+                mainMenuFont.drawText' WHITE, s, (100.0, 50.0)
             end
+
             else do <!> end
         end
     end
@@ -434,18 +373,6 @@ init :: fn do
     end
 
     post_move :: fn state do
-        if state.moves_left > 0 do
-            case state.inputState do
-                MoveGuyDirection _ do
-                    state.inputState = InputState.MoveGuy
-                end
-                else do <!> end
-            end
-
-            state.moves_left = state.moves_left - 1
-        else do
-            next_turn' state
-        end
     end
 
     love.keypressed = fn _key, scancode, repeat do
@@ -498,7 +425,7 @@ init :: fn do
                                     // friendly faction
                                     ef := guy.faction_to_int(other_fn)
 
-                                    kill := false
+                                    kill = false
                                     state.guys[ef] = state.guys[ef] -> filter' fn other_guy -> do
                                         if other_guy.node == g.node and not kill do
                                             kill = true
@@ -514,9 +441,6 @@ init :: fn do
                                     if kill do
                                         print' g
                                         state.guys[ff] = state.guys[ff] -> filter' fn friendly_guy -> do
-                                            print' "Comparison: "
-                                            print' friendly_guy
-                                            print' friendly_guy != g
                                             friendly_guy != g
                                         end
                                     end
@@ -527,28 +451,34 @@ init :: fn do
                                 f :: g.faction
 
                                 if not kill do
-                                    case node.tile do
-                                        Captured _ do
-                                            node.tile = graph.Tile.Captured f
+                                    node.tile = (fn ->
+                                        case node.tile do
+                                            Captured _ ret graph.Tile.Captured f
+                                            Empty ret graph.Tile.Captured f
+                                            Factory _ ret graph.Tile.Factory f
+                                            EmptyFactory ret graph.Tile.Factory f
+                                            Base f ret graph.Tile.Base f
+                                            else do
+                                                print' "Remember to add new tile!"
+                                                <!>
+                                            end
                                         end
-                                        Empty do
-                                            node.tile = graph.Tile.Captured f
-                                        end
-                                        Factory _ do
-                                            node.tile = graph.Tile.Factory f
-                                        end
-                                        EmptyFactory do
-                                            node.tile = graph.Tile.Factory f
-                                        end
-                                        else do
-                                            <!>
-                                            // TODO shouldn't be able to move to enemy base
-                                        end
-                                    end
+                                        ret graph.Tile.Empty
+                                    end)()
                                 end
 
-                                post_move' state
-                            end
+                                if not kill and state.moves_left > 0 do
+                                    case state.inputState do
+                                        MoveGuyDirection _ do
+                                            state.inputState = InputState.MoveGuy
+                                        end
+                                        else do <!> end
+                                    end
+
+                                    state.moves_left = state.moves_left - 1
+                                else do
+                                    next_turn' state
+                                end
                             else do end
                         end
                     end else do end
@@ -580,68 +510,3 @@ inputDirection :: fn -> Maybe do // Maybe (float, float)
     end
     ret Maybe.Just (normalize' res)
 end
-
-//use gfx
-//from gfx use (stableRandomColor as rcol)
-//use input
-//use sfx
-//
-//    r := 0.
-//
-//    aFont :: gfx.aFont()
-//    img :: gfx.newImage' "res/sylt.png"
-//    ps :: gfx.newParticles' img
-//    ps.setParticleLifetime(10., 10.)
-//    ps.setEmissionRate(5)
-//    ps.setLinearAcceleration((-40., -40.), (40., 40.))
-//
-//    ss :: gfx.newImplicitSpriteSheet' img, (55, 55)
-//
-//    s :: sfx.newSound' "res/bloop.wav", false, sfx.SoundType.Static
-//
-//    updates := []
-//    updates -> push' fn delta do
-//        if not input.isKeyDown' input.Key.A do
-//            r += delta
-//        end
-//        if input.isKeyDown' input.Key.B do
-//            sfx.cloneSound(s).playp' (1.0, 0.8), (1.0, 0.8)
-//        end
-//    end
-//    updates -> push' fn delta do
-//        pos :: input.mousePos'
-//        ps.setPosition' (cos(r) * 300., sin(r) * 100.) + pos
-//        ps.update(delta)
-//    end
-//
-//    love.update = fn delta do
-//        updates -> for_each' fn u: fn * -> do u(delta) end
-//    end
-//
-//    love.draw = fn do
-//        gfx.drawLine' rcol(1.), (0., 0.), (100., 100.)
-//
-//        gfx.drawCircle' rcol(2.), (200., 100.), 50.
-//        gfx.drawCircleOutline' rcol(3.), (200., 100.), 50.
-//
-//        gfx.drawRect' rcol(4.), (200., 200.), (50., 50.)
-//        gfx.drawRectCentered' rcol(5.), (200., 200.), (50., 50.)
-//
-//        gfx.drawRectOutline' rcol(5.), (200., 200.), (50., 50.)
-//        gfx.drawRectCenteredOutline' rcol(6.), (200., 200.), (50., 50.)
-//
-//        aFont.drawText' rcol(8.), "Hello world!", (200., 200.)
-//        aFont.drawTextT' rcol(9.), "Hello world!", (200., 250.), 1., 2.
-//        aFont.drawTextF' rcol(10.), "Hello world!", (200., 250.), gfx.Alignment.Right, 50.
-//        aFont.drawTextFT' rcol(11.), "Hello world!", (200., 250.), gfx.Alignment.Right, 50., -1., 2.
-//
-//        img.draw' (100., 200.), r, (1., 1.)
-//        img.drawTinted' rcol(12.), (100., 200.), r + 1., (1., 1.)
-//        img.drawCenterd' (100., 200.), r, (1., 1.)
-//        img.drawTintedCentered' rcol(12.), (100., 200.), r + 1., (1., 1.)
-//
-//        ps.draw' gfx.rgb(1., 1., 1.)
-//
-//        ss.draw' rcol(12.), as_int(rem(r, 4.)), (100., 100.), r, (1., 1.)
-//        ss.drawCenterd' rcol(13.), as_int(rem(r, 4.)), (100., 100.), r, (1., 1.)
-//    end

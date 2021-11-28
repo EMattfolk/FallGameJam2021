@@ -1,0 +1,67 @@
+from /love use love
+use /love as l
+
+playerControllers: [Controller] = []
+
+newController :: fn -> Controller do
+    Controller {
+        joystick: (0., 0.),
+        finish: false,
+        move: false,
+    }
+end
+
+Controller :: blob {
+    joystick: (float, float),
+    finish: bool,
+    move: bool,
+}
+
+postTick :: fn do
+    playerControllers -> for_each' fn controller do
+        controller.finish = false
+        controller.move = false
+    end
+end
+
+initControllers :: fn numControllers: int do
+    i := 0
+    loop i < numControllers do
+        playerControllers -> push' newController'
+        i += 1
+    end
+
+    love.gamepadaxis = fn joystick: l.LoveJoystick, axis, size do
+        controllerIndex := ((joystick.getID' joystick) - 1) / 2
+
+        if axis == "rightx" do
+            controller := playerControllers[controllerIndex]
+            controller.joystick = (controller.joystick[0], size)
+        end else if axis == "righty" do
+            controller := playerControllers[controllerIndex]
+            controller.joystick = (size, controller.joystick[1])
+        end else if axis == "leftx" do
+            controller := playerControllers[controllerIndex+1]
+            controller.joystick = (controller.joystick[0], size)
+        end else if axis == "lefty" do
+            controller := playerControllers[controllerIndex+1]
+            controller.joystick = (size, controller.joystick[1])
+        end
+    end
+
+    love.gamepadpressed = fn joystick: l.LoveJoystick, button do
+        controllerIndex := ((joystick.getID' joystick) - 1) / 2
+        if button == "rightshoulder" do
+            playerControllers[controllerIndex].move = true
+        else if button == "a" do
+            playerControllers[controllerIndex].finish = true
+        else if button == "leftshoulder" do
+            playerControllers[controllerIndex+1].move = true
+        else if button == "dpdown" do
+            playerControllers[controllerIndex+1].finish = true
+        end else do print' "Unbound button" end
+    end
+
+    love.gamepadreleased = fn joystick: l.LoveJoystick, button do
+    end
+end
