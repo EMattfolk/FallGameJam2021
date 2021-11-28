@@ -311,13 +311,15 @@ init :: fn do
                     end
                 end
 
+                deadzone :: 0.2
+
                 // Inputs
                 case state.inputState do
                     MoveGuy do
                         may_dir := inputDirection'
                         case may_dir do
                             Just dir do
-                                if magnitude(dir) > 0.2 do
+                                if magnitude(dir) > deadzone do
                                     state.inputState = InputState.MoveGuyDirection dir
                                 end
                             end
@@ -329,7 +331,7 @@ init :: fn do
                         may_dir := inputDirection'
                         case may_dir do
                             Just dir do
-                                if magnitude(dir) > 0.2 do
+                                if magnitude(dir) > deadzone do
                                     state.inputState = InputState.MoveGuyDirection dir
                                 end
                             end
