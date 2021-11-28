@@ -183,6 +183,7 @@ next_turn :: fn state do
     state.turns_until_score -= 1
     if state.turns_until_score == 0 do
         state.score += graph.scoreGraph' state.graph
+        state.score_timer = 1.0
 
         state.turns_until_score = love.math.random(4, 10) * len(state.factions)
     end
@@ -250,6 +251,7 @@ GameState :: blob {
     guys: {int: [guy.Guy]},
     guys_to_move: {int: [guy.Guy]},
     score: (int, int, int, int),
+    score_timer: float,
     turns_until_score: int,
     factions: [guy.Faction],
     player_turn: guy.Faction,
@@ -341,6 +343,7 @@ new_game :: fn num_players ->
         guys_to_move: guys_to_move,
         factions: factions,
         player_turn: guy.Faction.Blueberry,
+        score_timer: 0.,
         score: (0, 0, 0, 0),
         turns_until_score: 4,
         moves_left: 1,
@@ -401,6 +404,8 @@ init :: fn do
             MainMenu _ do
             end
             Game state do
+                state.score_timer -= delta
+                state.score_timer = max' state.score_timer, 0.
                 graph.updateGraph' state.graph, delta
                 graph.scoreGraph' state.graph
 
@@ -577,7 +582,9 @@ init :: fn do
 
                     guy.crest_image(fac).draw' (100.0 + as_float(i) * 100.0, 50.0), 0., (1., 1.)
 
-                    mainMenuFont.drawText' WHITE, as_str(score), (150.0 + as_float(i) * 100.0, 50.0)
+                    t :: state.score_timer
+                    s :: 1. + t * t * 0.5
+                    mainMenuFont.drawTextT' WHITE, as_str(score), (150.0 + as_float(i) * 100.0, 50.0), 0., s
                     i += 1
                 end
 
