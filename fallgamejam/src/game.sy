@@ -182,6 +182,8 @@ next_turn :: fn state, showVictory: fn * -> void do
     state.turns_until_score -= 1
     if state.turns_until_score == 0 do
         state.score += graph.scoreGraph' state.graph
+        state.score_timer = 1.0
+
         state.turns_until_score = love.math.random(4, 10) * len(state.factions)
 
         if state.num_fests >= MAX_FESTS do
@@ -306,6 +308,7 @@ GameState :: blob {
     guys: {int: [guy.Guy]},
     guys_to_move: {int: [guy.Guy]},
     score: (int, int, int, int),
+    score_timer: float,
     turns_until_score: int,
     num_fests: int,
     factions: [guy.Faction],
@@ -408,6 +411,7 @@ new_game :: fn num_players ->
         guys_to_move: guys_to_move,
         factions: factions,
         player_turn: guy.Faction.Blueberry,
+        score_timer: 0.,
         score: (0, 0, 0, 0),
         turns_until_score: 2 * len(factions),
         num_fests: 0,
@@ -472,6 +476,8 @@ init :: fn do
             MainMenu _ do
             end
             Game state do
+                state.score_timer -= delta
+                state.score_timer = max' state.score_timer, 0.
                 graph.updateGraph' state.graph, delta
                 graph.scoreGraph' state.graph
 
@@ -651,11 +657,24 @@ init :: fn do
             Game state do
                 love.graphics.origin'
 
-                s :: as_str' state.score
-                mainMenuFont.drawText' WHITE, s, (100.0, 50.0)
+                i := 0
+                state.factions -> for_each' fn fac do
+                    score := 0
+                    case fac do
+                        Blueberry do score = state.score[0] end
+                        Cloudberry do score = state.score[1] end
+                        Gooseberry do score = state.score[2] end
+                        Strawberry do score = state.score[3] end
+                        else do end
+                    end
 
-                s :: as_str' state.score
-                mainMenuFont.drawText' WHITE, s, (100.0, 50.0)
+                    guy.crest_image(fac).draw' (100.0 + as_float(i) * 100.0, 50.0), 0., (1., 1.)
+
+                    t :: state.score_timer
+                    s :: 1. + t * t * 0.5
+                    mainMenuFont.drawTextT' WHITE, as_str(score), (150.0 + as_float(i) * 100.0, 50.0), 0., s
+                    i += 1
+                end
 
                 if state.turns_until_score <= 4 do
                     prefix := ""
@@ -703,6 +722,8 @@ init :: fn do
                         else do end
                     end
                 end
+                love.graphics.origin'
+
             end
 
             else do <!> end
