@@ -157,9 +157,7 @@ next_turn :: fn state do
     if state.turns_until_score == 0 do
         state.score += graph.scoreGraph' state.graph
 
-        min :: 4 * len(state.factions)
-        max :: 12 * len(state.factions)
-        state.turns_until_score = love.math.random(min, max)
+        state.turns_until_score = love.math.random(4, 10) * len(state.factions)
     end
 
     if len(to_move) == 0 do
