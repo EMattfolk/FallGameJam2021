@@ -503,7 +503,7 @@ init :: fn do
 
                 love.graphics.translate' offset[0], offset[1]
                 do
-                    graph.drawGraph' state.graph
+                    graph.drawGraph' state.graph, state
 
                     state.factions -> for_each' fn f do
                         guys :: state.guys[guy.faction_to_int(f)]

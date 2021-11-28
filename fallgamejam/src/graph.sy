@@ -3,6 +3,7 @@ use /gfx
 use /res/
 use guy
 from guy use (Faction, faction_to_int)
+use game
 
 //Camera :: blob {
 //
@@ -43,7 +44,7 @@ tileColor :: fn tile ->
     ret gfx.rgb' 0., 0., 0.
 end
 
-drawNode :: fn node: Node do
+drawNode :: fn node: Node, state do
 
     c :: gfx.rgba' 1., 1. 1. 0.2
     s :: 0.7
@@ -72,9 +73,14 @@ drawNode :: fn node: Node do
         end
         else do <!> end
     end
+
+    if node == state.graph.nodes[game.guy_to_move(state).node] do
+        c :: gfx.rgba' 1., 1. 1. 0.5
+        gfx.drawCircle' c, node.position, NODE_SIZE
+    end
 end
 
-drawGraph :: fn graph: Graph do
+drawGraph :: fn graph: Graph, state do
     graph.edges -> for_each' fn edge do
         n1 := graph.nodes[edge[0]]
         n2 := graph.nodes[edge[1]]
@@ -83,7 +89,9 @@ drawGraph :: fn graph: Graph do
         gfx.drawLinew' c, 2., n1.position, n2.position
     end
 
-    graph.nodes -> for_each' drawNode
+    graph.nodes -> for_each' fn node do
+        drawNode' node, state
+    end
 end
 
 scoreGraph :: fn graph: Graph -> (int, int, int, int)
