@@ -71,7 +71,7 @@ kill_guy :: fn state, g do
     state.guys[f] = state.guys[f] -> filter' fn o -> do o != g end
 end
 
-move_active_guy :: fn state, dir do
+move_active_guy :: fn state, dir, showVictory do
     g :: state -> guy_to_move'
     old :: g.node
     new :: graph.facingNeighbour' old, count_guys_of_faction(state), g.faction, dir, state.graph
@@ -115,7 +115,7 @@ move_active_guy :: fn state, dir do
 
 
         if state.moves_left == 0 do
-            next_turn' state
+            next_turn' state, showVictory
         else do
             state.inputState = InputState.MoveGuy
             state.moves_left = state.moves_left - 1
@@ -127,7 +127,7 @@ move_active_guy :: fn state, dir do
         kill_guy' state, guys_on_new_node[0]
         kill_guy' state, g
 
-        next_turn' state
+        next_turn' state, showVictory
 
         f1 :: g.faction
         f2 :: guys_on_new_node[0].faction
@@ -159,8 +159,9 @@ move_active_guy :: fn state, dir do
 
 end
 
+MAX_FESTS :: 3
 
-next_turn :: fn state do
+next_turn :: fn state, showVictory: fn * -> void do
     faction_i :: guy.faction_to_int' state.player_turn
     state.guys_to_move[faction_i] -> pop'
 
@@ -181,8 +182,65 @@ next_turn :: fn state do
     state.turns_until_score -= 1
     if state.turns_until_score == 0 do
         state.score += graph.scoreGraph' state.graph
-
         state.turns_until_score = love.math.random(4, 10) * len(state.factions)
+
+        if state.num_fests >= MAX_FESTS do
+            detect_winner_by_score :: fn score ->
+                scores :: [score[0], score[1], score[2], score[3]]
+
+                max_score := 0
+                winner := Maybe.Nothing
+                range(len(state.factions)) -> for_each' fn i do
+                    if scores[i] > max_score do
+                        max_score = scores[i]
+                        winner = Maybe.Just state.factions[i]
+                    else if scores[i] == max_score do
+                        winner = Maybe.Nothing
+                    end
+                end
+
+                winner
+            end
+
+            detect_winner_by_guys :: fn ->
+                max_guys := 0
+                winner := Maybe.Nothing
+                state.factions -> for_each' fn faction do
+                    fi :: faction_to_int' faction
+                    g :: len(state.guys[fi])
+                    if g > max_guys do
+                        max_guys = g
+                        winner = Maybe.Just faction
+                    else if g == max_guys do
+                        winner = Maybe.Nothing
+                    end
+                end
+
+                winner
+            end
+
+            winner := detect_winner_by_score' state.score
+            case winner do
+                Just winner do
+                    showVictory' winner
+                    ret
+                end
+                else do end
+            end
+
+            winner = detect_winner_by_guys'
+            case winner do
+                Just winner do
+                    showVictory' winner
+                    ret
+                end
+                else do end
+            end
+
+            showVictory' state.factions[0]
+        else do
+            state.num_fests += 1
+        end
     end
 
     if len(to_move) == 0 do
@@ -249,6 +307,7 @@ GameState :: blob {
     guys_to_move: {int: [guy.Guy]},
     score: (int, int, int, int),
     turns_until_score: int,
+    num_fests: int,
     factions: [guy.Faction],
     player_turn: guy.Faction,
     moves_left: int,
@@ -350,7 +409,8 @@ new_game :: fn num_players ->
         factions: factions,
         player_turn: guy.Faction.Blueberry,
         score: (0, 0, 0, 0),
-        turns_until_score: 4,
+        turns_until_score: 2 * len(factions),
+        num_fests: 0,
         moves_left: 1,
         inputState: InputState.MoveGuy,
     }
@@ -437,7 +497,7 @@ init :: fn do
 
                         pi := playerIndex' state
                         if ctrl.playerControllers[pi].finish do
-                            next_turn' state
+                            next_turn(state, showVictory)
                         end
                     end
 
@@ -458,11 +518,11 @@ init :: fn do
                         // Move guy
                         pi := playerIndex' state
                         if ctrl.playerControllers[pi].move do
-                            move_active_guy' state, new_dir
+                            move_active_guy' state, new_dir, showVictory
                         end
 
                         if ctrl.playerControllers[pi].finish do
-                            next_turn' state
+                            next_turn' state, showVictory
                         end
                     end
 
@@ -579,7 +639,13 @@ init :: fn do
                 mainMenuFont.drawText' WHITE, s, (100.0, 50.0)
 
                 if state.turns_until_score <= 4 do
-                    s :: "Jamfest in " + as_str(state.turns_until_score) + " turns"
+                    prefix := ""
+                    if state.num_fests < MAX_FESTS do
+                        prefix = "Score in "
+                    else do
+                        prefix = "Final score in "
+                    end
+                    s :: prefix + as_str(state.turns_until_score) + " turns"
                     height :: love.graphics.getHeight'
                     mainMenuFont.drawText' WHITE, s, (100.0, as_float(height) - 100.0)
                 end
@@ -593,7 +659,6 @@ init :: fn do
                         graph.shaderColor(node)
                     )
                 end) -> drawVoronoiBackground'
-
                 love.graphics.translate' offset[0], offset[1]
                 do
                     graph.drawGraph' state.graph, state
