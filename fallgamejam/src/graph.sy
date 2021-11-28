@@ -200,7 +200,7 @@ neighboursOf :: fn node: int, graph -> [int] do
     neighbours
 end
 
-facingNeighbour :: fn node: int, faction, direction: (float, float), graph -> int do
+facingNeighbour :: fn node: int, count_guys: fn *, * -> int, faction, direction: (float, float), graph -> int do
     nDirection := normalize' direction
     origo := graph.nodes[node].position
     neighbours := neighboursOf' node, graph
@@ -216,6 +216,8 @@ facingNeighbour :: fn node: int, faction, direction: (float, float), graph -> in
             end
             else do end
         end
+
+        if count_guys(neighbour, faction) > 1 ret
 
         nNeighbour := normalize(graph.nodes[neighbour].position - origo)
         cosPhi := dot' nDirection, nNeighbour
