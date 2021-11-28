@@ -50,6 +50,7 @@ LoveGraphics :: blob {
     // Has to be an even length of the list.
     points: fn [(float, float)] -> void,
 
+    setLineWidth: fn float -> void,
     setColor: fn (float, float, float, float) -> void,
     getColor: fn -> (float, float, float, float),
 

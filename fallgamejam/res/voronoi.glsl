@@ -45,12 +45,12 @@ vec4 effect(vec4 color, Image texture, vec2 tc, vec2 pixel_coord) {
 
         vec4 nearest_color = colors[vertex_colors[nearest_vertices.x]];
         vec2 dist = sqrt(min_dist_sq);
-        vec4 cell_color = mix(vec4(1), nearest_color, clamp(0, 1, 100.0 / dist.x));
+        vec4 cell_color = mix(vec4(0), nearest_color, clamp(0, 1, 150.0 / dist.x));
 
-        vec4 border_color = vec4(0, 0, 0, 1);
+        vec4 border_color = cell_color * 0.8; // vec4(0, 0, 0, 1);
         float dist_border = distance_to_border(pixel_coord, nearest_vertices);
 
-        float is_border = 1.0 - smoothstep(0.0, 5.0, dist_border);
+        float is_border = 1.0 - smoothstep(0.0, 1.0, dist_border);
         vec4 fragment_color = mix(cell_color, border_color, is_border);
 
         return fragment_color;
