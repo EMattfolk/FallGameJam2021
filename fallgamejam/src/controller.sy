@@ -33,19 +33,21 @@ initControllers :: fn numControllers: int do
 
     love.gamepadaxis = fn joystick: l.LoveJoystick, axis, size do
         controllerIndex := ((joystick.getID' joystick) - 1) / 2
+        controllerIndex < len(playerControllers) <=> true
 
+        // dont ask me why we update the y value on x input and vice versa
         if axis == "rightx" do
             controller := playerControllers[controllerIndex]
-            controller.joystick = (controller.joystick[0], size)
+            controller.joystick = (size, controller.joystick[1])
         end else if axis == "righty" do
             controller := playerControllers[controllerIndex]
-            controller.joystick = (size, controller.joystick[1])
+            controller.joystick = (controller.joystick[0], size)
         end else if axis == "leftx" do
             controller := playerControllers[controllerIndex+1]
-            controller.joystick = (controller.joystick[0], size)
+            controller.joystick = (size, controller.joystick[1])
         end else if axis == "lefty" do
             controller := playerControllers[controllerIndex+1]
-            controller.joystick = (size, controller.joystick[1])
+            controller.joystick = (controller.joystick[0], size)
         end
     end
 
