@@ -120,6 +120,14 @@ scoreGraph :: fn graph: Graph -> (int, int, int, int)
     (score[0], score[1], score[2], score[3])
 end
 
+graphScale :: fn graph: Graph ->
+    if len(graph.nodes) == 36 do
+        ret 0.6
+    end
+
+    1.0
+end
+
 graphCenter :: fn graph: Graph ->
     centerPosition := (0., 0.)
     graph.nodes -> for_each' fn node do

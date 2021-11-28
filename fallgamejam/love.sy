@@ -81,6 +81,7 @@ LoveGraphics :: blob {
 
     origin: fn -> void,
     translate: fn float, float -> void,
+    scale: fn float, float -> void,
 }
 
 LoveKeyboard :: blob {
