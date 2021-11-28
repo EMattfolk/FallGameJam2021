@@ -23,6 +23,26 @@ faction_to_int :: fn faction -> int
     ret 0
 end
 
+int_to_faction :: fn integer -> Faction
+    if integer == faction_to_int(Faction.Blueberry) do
+        ret Faction.Blueberry
+    end
+
+    if integer == faction_to_int(Faction.Cloudberry) do
+        ret Faction.Cloudberry
+    end
+
+    if integer == faction_to_int(Faction.Gooseberry) do
+        ret Faction.Gooseberry
+    end
+
+    if integer == faction_to_int(Faction.Strawberry) do
+        ret Faction.Strawberry
+    end
+
+    <!>
+end
+
 crest_image :: fn faction -> gfx.Image
     case faction do
         Blueberry ret res.img["crest_b"]

@@ -256,6 +256,63 @@ send_shader_graph_positions :: fn shader: Shader, points do
     end
 end
 
+range :: fn max ->
+    nums :: []
+
+    i := 0
+    loop i < max do
+        nums -> push' i
+        i += 1
+    end
+
+    ret nums
+end
+
+new_game :: fn num_players ->
+    factions :: []
+    range(num_players) -> for_each' fn i do
+        factions -> push' guy.int_to_faction' i
+    end
+
+    graph :: graph.createGraph()
+
+    guys :: {:}
+    guys_to_move :: {:}
+
+    factions -> for_each' fn faction do
+        fi :: guy.faction_to_int' faction
+        guys[fi] = []
+
+        range(len(graph.nodes)) -> for_each' fn i do
+            node :: graph.nodes[i]
+
+            case node.tile do
+                Base f do
+                    if f == faction do
+                        g :: guy.new_guy' faction, i
+                        guys[fi] -> push' g
+                    end
+                end
+                else do end
+            end
+        end
+
+        guys_to_move[fi] = guys[fi] -> clone'
+    end
+
+    GameState {
+        graph: graph,
+        guys: guys,
+        guys_to_move: guys_to_move,
+        factions: factions,
+        player_turn: guy.Faction.Blueberry,
+        score: (0, 0, 0, 0),
+        turn: 1,
+        moves_left: 1,
+        inputState: InputState.MoveGuy,
+    }
+end
+
 playerIndex :: fn state -> do
     fis := state.factions -> map' fn faction -> do
         faction_to_int' faction
@@ -281,37 +338,14 @@ init :: fn do
 
     scene := States.MainMenu menu.createMenu([])
     scene = States.MainMenu menu.createMenu([
-        ("Start", fn do
-            blue_guys :: [
-                guy.new_guy(guy.Faction.Blueberry, 7),
-            ]
-            cloud_guys :: [
-                guy.new_guy(guy.Faction.Cloudberry, 13),
-            ]
-            state :: GameState {
-                graph: graph.createGraphFactory(),
-                guys: {
-                    guy.faction_to_int(guy.Faction.Blueberry): blue_guys,
-                    guy.faction_to_int(guy.Faction.Cloudberry): cloud_guys,
-                },
-                guys_to_move: {
-                    guy.faction_to_int(guy.Faction.Blueberry): blue_guys,
-                    guy.faction_to_int(guy.Faction.Cloudberry): cloud_guys,
-                },
-                factions: [guy.Faction.Blueberry, guy.Faction.Cloudberry],
-                player_turn: guy.Faction.Blueberry,
-                score: (0, 0, 0, 0),
-                turn: 1,
-                moves_left: 1,
-                inputState: InputState.MoveGuy,
-            }
-            state.factions -> for_each' fn faction do
-                fi :: guy.faction_to_int' faction
-
-                state.guys_to_move[fi] = state.guys[fi] -> clone'
-            end
-
-            scene = States.Game state
+        ("2 Players", fn do
+            scene = States.Game new_game' 2
+        end),
+        ("3 Players", fn do
+            scene = States.Game new_game' 3
+        end),
+        ("4 Players", fn do
+            scene = States.Game new_game' 4
         end),
         ("Exit", fn do
             love.event.quit' 0
@@ -443,10 +477,10 @@ init :: fn do
                 end
 
                 // Crests
-                B_OFFEST :: (200., 0.)
-                C_OFFSET :: (-200., 0.)
-                G_OFFSET :: (100., 200.)
-                S_OFFSET :: (-100., 200.)
+                B_OFFEST :: (300., 0.)
+                C_OFFSET :: (-300., 0.)
+                G_OFFSET :: (200., 300.)
+                S_OFFSET :: (-200., 300.)
                 SCALE :: (2.0, 2.0)
                 guy.crest_image(guy.Faction.Blueberry).drawCentered' MIDDLE + B_OFFEST, 0.0, SCALE
                 guy.crest_image(guy.Faction.Cloudberry).drawCentered' MIDDLE + C_OFFSET, 0.0, SCALE
