@@ -120,10 +120,11 @@ impl Value {
         match self {
             Value::Ty(ty) => write!(fmt, "<type \"{:?}\">", ty),
             Value::Blob(v) => {
+                let v_ref = v.borrow();
                 write!(
                     fmt,
                     "{} (0x{:x}) {{",
-                    if let Some(Value::String(name)) = v.borrow().get("_name") {
+                    if let Some(Value::String(name)) = v_ref.get("_name") {
                         name.as_str()
                     } else {
                         unreachable!("Got blob without a name")
